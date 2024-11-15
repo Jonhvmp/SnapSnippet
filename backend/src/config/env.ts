@@ -8,6 +8,7 @@ interface Env {
   PORT: number;
   MONGODB_URI: string;
   JWT_SECRET: string;
+  GITHUB_TOKEN: string;
 }
 
 // Criar uma função para fazer a conversão das variáveis de ambiente e definir valores padrão
@@ -16,6 +17,7 @@ const getEnv = (): Env => {
     PORT: parseInt(process.env.PORT || '8008', 10),
     MONGODB_URI: process.env.MONGODB_URI as string,
     JWT_SECRET: process.env.JWT_SECRET || 'defaultsecret',
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN as string,
   };
 };
 
