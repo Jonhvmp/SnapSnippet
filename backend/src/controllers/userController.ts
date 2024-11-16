@@ -55,6 +55,11 @@ export const updatePassword = async (req: Request, res: Response) => {
   try {
     const { oldPassword, newPassword } = req.body;
 
+    // Verifica se o usuário está autenticado
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Não autorizado.' });
+    }
+
     const user = await User.findById(req.user.id).select('+password');
     if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
 
