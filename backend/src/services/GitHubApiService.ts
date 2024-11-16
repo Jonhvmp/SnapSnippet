@@ -1,9 +1,9 @@
 // src/services/GitHubApiService.ts
 
 import axios from 'axios';
+import env from '../config/env'
 
 export class GitHubApiService {
-  // Mapeamento de extensões de arquivos para nomes de linguagens
   private static languageMap: { [key: string]: string } = {
     js: 'JavaScript',
     py: 'Python',
@@ -17,54 +17,45 @@ export class GitHubApiService {
     md: 'Markdown',
     sh: 'Shell Script',
     txt: 'Texto',
-    // Adicione outras extensões conforme necessário
   };
 
-  // Método para buscar snippets públicos com base em uma query (ex.: linguagem, tags)
+  // Método para buscar snippets públicos
   static async fetchPublicSnippets(query: string): Promise<any> {
     try {
-      // Defina a URL da API externa (exemplo: GitHub Gist API)
       const apiUrl = `https://api.github.com/gists/public?q=${encodeURIComponent(query)}`;
-
-      // Configurações adicionais de headers podem ser adicionadas aqui, se necessário (ex.: Token de autenticação)
       const response = await axios.get(apiUrl, {
         headers: {
           Accept: 'application/vnd.github.v3+json',
-          // Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, // (Opcional) Use um token se a API exigir autenticação
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, // Token de acesso do GitHub
         },
       });
 
-      // Processa os dados retornados pela API e transforma-os no formato desejado
-      interface Gist {
-        id: string;
-        description: string;
-        files: {
-          [key: string]: {
-            content: string;
-          };
-        };
-        created_at: string;
-        html_url: string;
-      }
-
-      const snippets = (response.data as Gist[]).map((gist: Gist) => {
+      const gistPromises = (response.data as any).map(async (gist: any) => {
         const fileName = gist.files ? Object.keys(gist.files)[0] : 'Sem nome';
-        const fileData = gist.files[fileName];
-
-        // Identifica a linguagem pela extensão do arquivo
         const extension = fileName.split('.').pop();
         const language = extension ? this.languageMap[extension] || 'Desconhecido' : 'Desconhecida';
+
+        const gistDetail = await axios.get(`https://api.github.com/gists/${gist.id}`, {
+          headers: {
+            Accept: 'application/vnd.github.v3+json',
+            Authorization: `Bearer ${env.GITHUB_TOKEN}`, // Token de acesso do GitHub
+          },
+        });
+
+        const completeFileData = (gistDetail.data as any).files[fileName];
+        const fileContent = completeFileData ? completeFileData.content : '';
 
         return {
           id: gist.id,
           title: gist.description || 'Sem título',
           language: language,
-          code: fileData.content || '',
+          code: fileContent,
           createdAt: gist.created_at,
           url: gist.html_url,
         };
       });
 
+      const snippets = await Promise.all(gistPromises);
       return snippets;
     } catch (error) {
       console.error('Erro ao buscar snippets públicos:', error);
