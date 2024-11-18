@@ -1,23 +1,17 @@
-// src/app.ts
-
 import express from 'express';
-import snippetRoutes from './routes/snippetRoutes';
-import userRoutes from './routes/userRoutes';
+import { registerUser, loginUser } from './controllers/authController';
+import { validateToken } from './middlewares/authMiddleware';
+// import { updatePassword } from './controllers/userController';
+import { errorMiddleware } from './middlewares/errorMiddleware';
 
 const app = express();
 
-// Outras configurações do app, como middleware de parsing JSON
 app.use(express.json());
 
-// Definindo as rotas de auth
-app.use('/api/auth', userRoutes);
+app.post('/api/auth/register', registerUser);
+app.post('/api/auth/login', loginUser);
+app.post('/api/auth/password', validateToken);
 
-// rota de teste '/'
-app.get('/', (req, res) => {
-  res.send('API de snippets funcionando!');
-})
-
-// Rota de snippets
-app.use('/api/snippets', snippetRoutes); // criado apenas para testes no momento
+app.use(errorMiddleware);
 
 export default app;
