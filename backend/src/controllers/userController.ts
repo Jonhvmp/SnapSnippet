@@ -1,6 +1,6 @@
 // src/controllers/userController.ts
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
@@ -53,7 +53,7 @@ export const login = async (req: Request, res: Response) => {
 
 
 // Atualiza a senha do usuário
-export const updatePassword = async (req: Request, res: Response) => {
+export const updatePassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { oldPassword, newPassword } = req.body;
 
@@ -72,7 +72,10 @@ export const updatePassword = async (req: Request, res: Response) => {
     await user.save();
 
     res.json({ message: 'Senha atualizada com sucesso.' });
+    return;
   } catch (error) {
     res.status(500).json({ error: 'Erro ao atualizar senha.' });
+    next(error)
+    return;
   }
 };
