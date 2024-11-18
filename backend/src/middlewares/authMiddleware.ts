@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import env from '../config/env';
+// import env from '../config/env';
+
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 export const validateToken = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -10,7 +14,7 @@ export const validateToken = (req: Request, res: Response, next: NextFunction): 
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
     req.user = { id: decoded.id };
     next();
     return;

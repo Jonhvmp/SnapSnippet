@@ -3,9 +3,20 @@ import { registerUser, loginUser } from './controllers/authController';
 import { validateToken } from './middlewares/authMiddleware';
 // import { updatePassword } from './controllers/userController';
 import { errorMiddleware } from './middlewares/errorMiddleware';
+import { connectDB } from './config/database'
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
 
 const app = express();
 
+// Conexão com o banco de dados - MongoDb
+connectDB();
+
+// Middleware
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(cors());
 app.use(express.json());
 
 app.post('/api/auth/register', registerUser);

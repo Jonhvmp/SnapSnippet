@@ -2,14 +2,18 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from '../models/User';
-import env from '../config/env';
+// import env from '../config/env';
+
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 const generateAccessToken = (user: any) => {
-  return jwt.sign({ id: user.id, email: user.email }, env.JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 };
 
 const generateRefreshToken = (user: any) => {
-  return jwt.sign({ id: user.id }, env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
 };
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -19,6 +23,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     if (!username || !email || !password || !confirmPassword) {
       res.status(400).json({ message: 'Todos os campos são obrigatórios' });
       return;
+      console.log('Todos os campos são obrigatórios');
     }
 
     if (password !== confirmPassword) {
@@ -42,6 +47,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     res.status(201).json({ message: 'Usuário registrado com sucesso', accessToken, refreshToken });
   } catch (error) {
     next(error);
+    console.log(error);
   }
 };
 
