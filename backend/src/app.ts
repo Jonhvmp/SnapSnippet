@@ -2,11 +2,15 @@
 
 import express from 'express';
 import snippetRoutes from './routes/snippetRoutes';
+import userRoutes from './routes/userRoutes';
 
 const app = express();
 
 // Outras configurações do app, como middleware de parsing JSON
 app.use(express.json());
+
+// Definindo as rotas de auth
+app.use('/api/auth', userRoutes);
 
 // rota de teste '/'
 app.get('/', (req, res) => {

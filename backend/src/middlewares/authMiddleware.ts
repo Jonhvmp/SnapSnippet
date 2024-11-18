@@ -4,18 +4,18 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import env from '../config/env';
 
-export const validateToken = (req: Request, res: Response, next: NextFunction) => {
+export const validateToken = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
-    return res.status(401).json({ error: 'Token de autenticação ausente.' });
+    return next({ status: 401, message: 'Token de autenticação ausente.' }); // Passa o erro para o middleware de erro
   }
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET as string) as { id: string };
-    req.user = { id: decoded.id }; // Aqui adicionamos a propriedade `user`
+    req.user = { id: decoded.id }; // Adiciona a propriedade `user` no objeto da requisição
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Token de autenticação inválido.' });
+    next({ status: 401, message: 'Token de autenticação inválido.' }); // Passa o erro para o middleware de erro
   }
 };
