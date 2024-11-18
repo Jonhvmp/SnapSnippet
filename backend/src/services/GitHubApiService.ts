@@ -1,7 +1,11 @@
 // src/services/GitHubApiService.ts
 
 import axios from 'axios';
-import env from '../config/env'
+// import env from '../config/env'
+
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 export class GitHubApiService {
   private static languageMap: { [key: string]: string } = {
@@ -38,7 +42,7 @@ export class GitHubApiService {
         const gistDetail = await axios.get(`https://api.github.com/gists/${gist.id}`, {
           headers: {
             Accept: 'application/vnd.github.v3+json',
-            Authorization: `Bearer ${env.GITHUB_TOKEN}`, // Token de acesso do GitHub
+            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, // Token de acesso do GitHub
           },
         });
 

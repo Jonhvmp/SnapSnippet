@@ -1,10 +1,14 @@
 // src/controllers/userController.ts
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
-import env from '../config/env';
+// import env from '../config/env';
+
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 // Registro de um novo usuário
 export const register = async (req: Request, res: Response) => {
@@ -43,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Credenciais inválidas.' });
     }
 
-    const token = jwt.sign({ id: user._id }, env.JWT_SECRET as string, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 
     res.json({ token });
   } catch (error) {
@@ -53,7 +57,7 @@ export const login = async (req: Request, res: Response) => {
 
 
 // Atualiza a senha do usuário
-export const updatePassword = async (req: Request, res: Response) => {
+export const updatePassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { oldPassword, newPassword } = req.body;
 
@@ -72,7 +76,10 @@ export const updatePassword = async (req: Request, res: Response) => {
     await user.save();
 
     res.json({ message: 'Senha atualizada com sucesso.' });
+    return;
   } catch (error) {
     res.status(500).json({ error: 'Erro ao atualizar senha.' });
+    next(error)
+    return;
   }
 };
