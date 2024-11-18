@@ -1,14 +1,23 @@
 import { Router } from 'express';
-import { errorMiddleware } from '../middlewares/errorMiddleware';
-import { registerUser, loginUser } from '../controllers/userController';
+import { register, login } from '../controllers/userController';
 
 const router = Router();
 
-// Rotas para gerenciamento de usuários
-router.post('/register', registerUser); // Registro de um novo usuário
-router.post('/login', loginUser); // Login de usuário
+// Rotas para usuários
+router.post('/register', async (req, res, next) => {
+  try {
+    await register(req, res);
+  } catch (error) {
+    next(error); // Propaga o erro para o middleware de tratamento
+  }
+});
 
-// Middleware de tratamento de erros
-router.use(errorMiddleware);
+router.post('/login', async (req, res, next) => {
+  try {
+    await login(req, res);
+  } catch (error) {
+    next(error); // Propaga o erro para o middleware de tratamento
+  }
+});
 
 export default router;
