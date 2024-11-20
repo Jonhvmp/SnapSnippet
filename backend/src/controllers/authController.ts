@@ -43,6 +43,12 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      res.status(400).json({ message: 'Nome de usuário já está em uso' });
+      return;
+    }
+
     if (password.length < 8 || password.length > 128) {
       res.status(400).json({ message: 'A senha é obrigatória e deve ter entre 8 e 128 caracteres.'})
     }
