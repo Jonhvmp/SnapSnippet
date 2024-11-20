@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/userController';
+import { registerUser, loginUser } from '../controllers/authController';
 import { body } from 'express-validator'
 import { ValidationChain } from 'express-validator';
 
@@ -34,7 +34,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 const router = Router();
 
 // Rotas para usuários
-router.post('/register', validate('register'), asyncHandler(register)); // Registro de um novo usuário
-router.post('/login', validate('login'), asyncHandler(login)); // Login de usuário
+router.post('/register', validate('register'), asyncHandler(registerUser)); // Registro de um novo usuário
+router.post('/login', validate('login'), asyncHandler(loginUser)); // Login de usuário
 
 export default router;

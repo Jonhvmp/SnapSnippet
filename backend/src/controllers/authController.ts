@@ -22,18 +22,33 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     if (!username || !email || !password || !confirmPassword) {
       res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-      return;
       console.log('Todos os campos são obrigatórios');
+      return;
     }
 
-    if (password !== confirmPassword) {
-      res.status(400).json({ message: 'As senhas não coincidem' });
+    if (username.length < 3 || username.length > 50) {
+      res.status(400).json({ message: 'O nome de usuário é obrigatório e deve ter entre 3 e 50 caracteres.' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ message: 'O e-mail é obrigatório e deve ser válido.' });
       return;
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       res.status(400).json({ message: 'Email já está em uso' });
+      return;
+    }
+
+    if (password.length < 8 || password.length > 128) {
+      res.status(400).json({ message: 'A senha é obrigatória e deve ter entre 8 e 128 caracteres.'})
+    }
+
+    if (password !== confirmPassword) {
+      res.status(400).json({ message: 'As senhas não coincidem' });
       return;
     }
 
