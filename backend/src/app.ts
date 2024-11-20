@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { registerUser, loginUser } from './controllers/authController';
 import { validateToken } from './middlewares/authMiddleware';
 // import { updatePassword } from './controllers/userController';
@@ -18,6 +18,11 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
+
+// passando tipagem na rota ('/)
+app.get('/', (req: Request, res: Response): void => {
+  res.json({ message: 'API rodando...' });
+});
 
 app.post('/api/auth/register', registerUser);
 app.post('/api/auth/login', loginUser);

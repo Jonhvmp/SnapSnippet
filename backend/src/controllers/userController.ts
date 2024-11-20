@@ -13,7 +13,7 @@ dotenv.config();
 // Registro de um novo usuário
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, confirmPassword } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
