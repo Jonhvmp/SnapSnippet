@@ -23,9 +23,30 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
       favorite: false,
     });
 
+    if (snippet.title === '' || snippet.title === undefined || snippet.title === null) { // Adiciona um título padrão
+      snippet.title = 'Snippet sem título';
+    }
+
+    if (snippet.description === '' || snippet.description === undefined || snippet.description === null) {
+      snippet.description = 'Snippet sem descrição';
+    }
+
+    if (snippet.language === '' || snippet.language === undefined || snippet.language === null) {
+      snippet.language = 'text';
+    }
+
+    if (snippet.tags === '' as unknown as Array<any> || snippet.tags === undefined || snippet.tags === null) {
+      snippet.tags = []; // nesse caso essa array é vazia
+    }
+
+    if (snippet.code === '' || snippet.code === undefined || snippet.code === null) {
+      return res.status(400).json({ error: 'Código inválido ou ausente.' });
+    }
+
     await snippet.save();
     res.status(201).json(snippet);
   } catch (error) {
+    console.error('Erro ao criar snippet:', error);
     next(error); // Propaga o erro para o middleware de tratamento de erros
   }
 };
@@ -38,6 +59,7 @@ export const getSnippet = async (req: Request, res: Response, next: NextFunction
 
     res.json(snippet);
   } catch (error) {
+    console.error('Erro ao buscar snippet:', error);
     next(error);
   }
 };
@@ -57,6 +79,7 @@ export const updateSnippet = async (req: Request, res: Response, next: NextFunct
 
     res.json(snippet);
   } catch (error) {
+    console.error('Erro ao atualizar snippet:', error);
     next(error);
   }
 };
@@ -69,6 +92,7 @@ export const deleteSnippet = async (req: Request, res: Response, next: NextFunct
 
     res.status(204).send();
   } catch (error) {
+    console.error('Erro ao deletar snippet:', error);
     next(error);
   }
 };
@@ -84,6 +108,7 @@ export const markFavorite = async (req: Request, res: Response, next: NextFuncti
 
     res.json(snippet);
   } catch (error) {
+    console.error('Erro ao marcar snippet como favorito:', error);
     next(error);
   }
 };
@@ -95,6 +120,7 @@ export const fetchPublicSnippets = async (req: Request, res: Response, next: Nex
     const snippets = await GitHubApiService.fetchPublicSnippets(query);
     res.json(snippets);
   } catch (error) {
+    console.error('Erro ao buscar snippets públicos:', error);
     next(error);
   }
 };
