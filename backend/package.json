@@ -36,6 +36,7 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/morgan": "^1.9.9",
+    "mocha": "^10.8.2",
     "morgan": "^1.10.0"
   }
 }

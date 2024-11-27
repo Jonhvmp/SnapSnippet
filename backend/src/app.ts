@@ -1,7 +1,7 @@
-import express, { Request, Response } from 'express';
-import { registerUser, loginUser } from './controllers/authController';
-import { validateToken } from './middlewares/authMiddleware';
-// import { updatePassword } from './controllers/userController';
+import express, { Request, Response, NextFunction } from 'express';
+import authRoutes from './routes/authRoutes';
+import snippetRoutes from './routes/snippetRoutes';
+// import { userRoutes } from './routes/userRoutes';
 import { errorMiddleware } from './middlewares/errorMiddleware';
 import { connectDB } from './config/database'
 import cors from 'cors';
@@ -24,9 +24,15 @@ app.get('/', (req: Request, res: Response): void => {
   res.json({ message: 'API rodando...' });
 });
 
-app.post('/api/auth/register', registerUser);
-app.post('/api/auth/login', loginUser);
-app.post('/api/auth/password', validateToken);
+app.use('/api/auth', authRoutes);
+// app.use('/users', userRoutes);
+
+app.use('/api/snippets', snippetRoutes);
+
+// Passando uma mensagem dinâmica para o middleware de erro
+app.use((req: Request, res: Response, next: NextFunction): void => {
+  res.status(404).json({ message: 'Rota não encontrada' });
+});
 
 app.use(errorMiddleware);
 

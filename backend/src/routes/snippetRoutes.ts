@@ -10,7 +10,7 @@ router.get('/public-snippets', validateToken, (req, res, next) => {
   fetchPublicSnippets(req, res, next).catch(next); // Propaga erros ao middleware
 }); // Busca snippets públicos
 
-router.post('/', validateToken, (req, res, next) => {
+router.post('/create-snippets', validateToken, (req, res, next) => {
   createSnippet(req, res, next).catch(next);
 }); // Criação de um novo snippet
 
