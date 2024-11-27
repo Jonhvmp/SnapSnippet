@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from '../models/User';
-// import env from '../config/env';
 
 import dotenv from 'dotenv'
 
@@ -22,7 +21,6 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     if (!username || !email || !password || !confirmPassword) {
       res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-      console.log('Todos os campos são obrigatórios');
       return;
     }
 
@@ -50,7 +48,8 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     }
 
     if (password.length < 8 || password.length > 128) {
-      res.status(400).json({ message: 'A senha é obrigatória e deve ter entre 8 e 128 caracteres.'})
+      res.status(400).json({ message: 'A senha é obrigatória e deve ter entre 8 e 128 caracteres.' });
+      return;
     }
 
     if (password !== confirmPassword) {
@@ -66,15 +65,21 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     const refreshToken = generateRefreshToken(user);
 
     res.status(201).json({ message: 'Usuário registrado com sucesso', accessToken, refreshToken });
+    return;
   } catch (error) {
-    next(error);
-    console.log(error);
+    next(error); // Passa o erro para o middleware de tratamento de erros
   }
 };
+
 
 export const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+      return;
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -93,6 +98,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     res.json({ accessToken, refreshToken });
   } catch (error) {
+    console.error('Erro ao fazer login:', error);
     next(error);
   }
 };
