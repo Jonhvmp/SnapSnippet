@@ -7,6 +7,7 @@ export interface ISnippet extends Document {
   description: string;
   language: string;
   tags: string[];
+  user: Schema.Types.ObjectId;
   code: string;
   favorite: boolean;
   createdAt: Date;
@@ -36,6 +37,11 @@ const SnippetSchema = new Schema<ISnippet>(
         values: ['JavaScript', 'Python', 'Java', 'C++', 'TypeScript', 'Ruby', 'PHP', 'HTML', 'CSS'],
         message: 'Linguagem não suportada.',
       },
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     tags: {
       type: [String],
@@ -67,21 +73,30 @@ const SnippetSchema = new Schema<ISnippet>(
   }
 );
 
-// Middleware para verificar e sanitizar o campo "code" contra injeções de código potencialmente perigosas
+// Middleware para sanitizar o campo "code" e evitar ataques
 SnippetSchema.pre<ISnippet>('save', function (next) {
-  // Sanitização ou ajustes necessários podem ser implementados aqui
-  this.code = this.code.replace(/<script>/g, '&lt;script&gt;');
-  this.code = this.code.replace(/<\/script>/g, '&lt;/script&gt;');
-  this.code = this.code.replace(/<iframe>/g, '&lt;iframe&gt;');
-  this.code = this.code.replace(/<\/iframe>/g, '&lt;/iframe&gt;');
-  this.code = this.code.replace(/<img>/g, '&lt;img&gt;');
-  this.code = this.code.replace(/<\/img>/g, '&lt;/img&gt;');
-  next();
+  // Codificar tags HTML perigosas
+  this.code = this.code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  // Exemplo de sanitização
-  // this.code = this.code.replace(/<script>/g, '&lt;script&gt;');
-  // this.code = this.code.replace(/<\/script>/g, '&lt;/script&gt;');
-  // next();
+  // Remover atributos perigosos
+  this.code = this.code.replace(/on\w+="[^"]*"/g, '').replace(/on\w+='[^']*'/g, '');
+
+  // Remover URLs perigosas em estilos inline
+  this.code = this.code.replace(/style\s*=\s*["'][^"']*(javascript|data|vbscript):[^"']*["']/gi, 'style=""');
+
+  // Remover o uso de expression em estilos
+  this.code = this.code.replace(/expression\([^)]*\)/gi, '');
+
+  // Remover tags específicas não desejadas
+  const forbiddenTags = ['script', 'iframe', 'img', 'embed', 'object', 'link', 'style'];
+  forbiddenTags.forEach((tag) => {
+    const tagRegex = new RegExp(`<${tag}[^>]*>`, 'gi');
+    const closeTagRegex = new RegExp(`</${tag}>`, 'gi');
+    this.code = this.code.replace(tagRegex, `&lt;${tag}&gt;`);
+    this.code = this.code.replace(closeTagRegex, `&lt;/${tag}&gt;`);
+  });
+
+  next();
 });
 
 export const Snippet = model<ISnippet>('Snippet', SnippetSchema);

@@ -1,8 +1,6 @@
 import dotenv from 'dotenv';
-
 // Carregar as variáveis de ambiente do arquivo .env
 dotenv.config();
-
 // Definir a tipagem das variáveis de ambiente
 interface Env {
   PORT: number;
