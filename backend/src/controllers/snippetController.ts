@@ -14,6 +14,10 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
       return res.status(400).json({ error: 'Código inválido ou ausente.' });
     }
 
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuário não autenticado.' });
+    }
+
     const snippet = new Snippet({
       title,
       description,
@@ -21,6 +25,7 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
       tags,
       code,
       favorite: false,
+      user: req.user.id,
     });
 
     if (snippet.title === '' || snippet.title === undefined || snippet.title === null) { // Adiciona um título padrão
@@ -48,6 +53,20 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
   } catch (error) {
     console.error('Erro ao criar snippet:', error);
     next(error); // Propaga o erro para o middleware de tratamento de erros
+  }
+};
+
+// Busca todos os snippets do usuário
+export const fetchMySnippets = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuário não autenticado.' });
+    }
+    const snippets = await Snippet.find({ user: req.user.id });
+    res.json(snippets);
+  } catch (error) {
+    console.error('Erro ao buscar snippets do usuário:', error);
+    next(error);
   }
 };
 
@@ -96,6 +115,20 @@ export const deleteSnippet = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+// Busca snippets favoritos do usuário
+export const fetchMySnippetsFavorite = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuário não autenticado.' });
+    }
+    const snippets = await Snippet.find({ user: req.user.id, favorite: true });
+    res.json(snippets);
+  } catch (error) {
+    console.error('Erro ao buscar snippets favoritos do usuário:', error);
+    next(error);
+  }
+}
 
 // Marca ou desmarca um snippet como favorito
 export const markFavorite = async (req: Request, res: Response, next: NextFunction) => {

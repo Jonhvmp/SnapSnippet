@@ -1,7 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { registerUser, loginUser } from '../controllers/authController';
+import { registerUser, loginUser, forgotPassword, resetPassword } from '../controllers/authController';
 import { body } from 'express-validator';
 import { ValidationChain, Result, validationResult } from 'express-validator';
+import { validateResetToken } from '../middlewares/validateResetToken';
 
 // Criando um method switch para validação de campos
 interface ValidationMethod {
@@ -22,8 +23,25 @@ const validate: ValidationMethod = (method) => {
         body('email').exists().isEmail().withMessage('O e-mail é obrigatório e deve ser válido.'),
         body('password').exists().isString().withMessage('A senha é obrigatória.'),
       ];
+
+    case 'forgot-password':
+      return [
+        body('email').exists().isEmail().withMessage('O e-mail é obrigatório e deve ser válido.'),
+      ];
+
+    case 'reset-password':
+      return [
+        body('password').exists().isString().isLength({ min: 8, max: 128 }).withMessage('A senha é obrigatória e deve ter entre 8 e 128 caracteres.'),
+        body('confirmPassword').exists().isString().custom((value, { req }) => {
+          if (value !== req.body.password) {
+            throw new Error('As senhas não coincidem.');
+          }
+          return true;
+        }
+        ),
+      ];
     default:
-      return [];
+      throw new Error('Método de validação não encontrado.');
   }
 };
 
@@ -38,7 +56,6 @@ const validateRequest = (req: Request, res: Response, next: NextFunction): void 
   }
   next(); // Passa para o próximo middleware/rota se não houver erros
 };
-
 
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   console.log(`Executando função assíncrona para a rota: ${req.path}`);
@@ -55,9 +72,22 @@ router.post('/register', validate('register'), validateRequest, asyncHandler(reg
 
 router.post('/login', validate('login'), validateRequest, asyncHandler(loginUser)); // Login de usuário
 
-router.use((err: any, req: any, res: any) => {
+// Rotas de forgot e reset password
+router.post('/forgot-password', validate('forgot-password'), validateRequest, asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
+
+router.post('/reset-password/:token', validateResetToken, validate('reset-password'), validateRequest, asyncHandler(resetPassword));
+
+
+router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map((error: any) => error.message);
+    res.status(400).json({ message: 'Erro de validação', errors: messages });
+    return;
+  }
+
   console.error(`Erro no tratamento da rota: ${req.path}`, err);
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
+
 
 export default router;

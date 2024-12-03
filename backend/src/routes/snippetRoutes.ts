@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { validateToken } from '../middlewares/authMiddleware';
 import { errorMiddleware } from '../middlewares/errorMiddleware';
-import { fetchPublicSnippets, createSnippet, updateSnippet, deleteSnippet, getSnippet, markFavorite } from '../controllers/snippetController';
+import { fetchPublicSnippets, createSnippet, updateSnippet, deleteSnippet, getSnippet, markFavorite, fetchMySnippets, fetchMySnippetsFavorite } from '../controllers/snippetController';
 
 const router = Router();
 
@@ -13,6 +13,22 @@ router.get('/public-snippets', validateToken, (req, res, next) => {
 router.post('/create-snippets', validateToken, (req, res, next) => {
   createSnippet(req, res, next).catch(next);
 }); // Criação de um novo snippet
+
+router.get('/my-snippets', validateToken, (req, res, next) => {
+  fetchMySnippets(req, res, next).catch(next);
+}); // Busca snippets do usuário
+
+router.get('/my-favorites', validateToken, (req, res, next) => {
+  fetchMySnippetsFavorite(req, res, next).catch(next);
+}); // Busca snippets favoritos do usuário
+
+router.get('/search', validateToken, (req, res, next) => {
+  fetchPublicSnippets(req, res, next).catch(next);
+}); // Busca snippets por termo
+
+router.get('/tags', validateToken, (req, res, next) => {
+  fetchPublicSnippets(req, res, next).catch(next);
+}); // Busca snippets por tag
 
 router.put('/:id', validateToken, (req, res, next) => {
   updateSnippet(req, res, next).catch(next);

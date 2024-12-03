@@ -1,3 +1,5 @@
 module.exports = {
-  spec: ['backend/src/*.test.ts', 'frontend/src/*.test.ts']
+  require: 'ts-node/esm',
+  extension: ['ts'], // Define os arquivos de teste como .ts
+  spec: 'src/**/*.test.ts', // Localização dos testes
 };
