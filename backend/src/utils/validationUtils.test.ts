@@ -5,16 +5,18 @@ import { handleValidationError } from './validationUtils';
 describe('handleValidationError', () => {
   it('deve retornar status 400 com a mensagem de erro', () => {
     // Mock do objeto Response
-    const res = {
-      status: function (code: number) {
-        expect(code).to.equal(400);
-        return this;
+    const res: Partial<Response> = {
+      status: function (code: number): Response {
+        expect(code).to.equal(400); // Valida o status
+        return this as Response; // Retorna o mock como Response
       },
-      json: function (data: any) {
-        expect(data).to.deep.equal({ message: 'Erro de validação' });
+      json: function (data: { message: string }): Response {
+        expect(data).to.deep.equal({ message: 'Erro de validação' }); // Valida o JSON retornado
+        return this as Response; // Retorna o mock como Response
       },
-    } as unknown as Response;
+    };
 
-    handleValidationError(res, 'Erro de validação');
+    // Chama a função com o mock criado
+    handleValidationError(res as Response, 'Erro de validação');
   });
 });
