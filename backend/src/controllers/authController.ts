@@ -172,10 +172,10 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
 export const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { token, password, confirmPassword } = req.body;
+    const { password, confirmPassword } = req.body;
+    const { token } = req.params;
 
-    // Validação básica
-    if (!token || !password || !confirmPassword) {
+    if (!password || !confirmPassword) {
       return handleValidationError(res, 'Todos os campos são obrigatórios');
     }
 
@@ -183,7 +183,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       return handleValidationError(res, 'A senha é obrigatória e deve ter entre 8 e 128 caracteres e as senhas devem coincidir.');
     }
 
-    // Validação do token de redefinição de senha
+    // O token já foi validado no middleware
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     const tokenDoc = await Token.findOne({ token: hashedToken, expiresAt: { $gt: Date.now() } });
 
@@ -197,7 +197,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       return handleValidationError(res, 'Usuário não encontrado');
     }
 
-    // Atualiza a senha do usuário
+    // Atualiza a senha
     user.password = await bcrypt.hash(password, 10);
     user.loginAttempts = 0; // Reseta tentativas de login
     user.lockUntil = null; // Remove bloqueios, se houver
@@ -208,11 +208,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
     console.log(`Senha redefinida para o usuário: ${user.id}`);
 
-    // Gera novos tokens de acesso
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    res.json({ message: 'Senha redefinida com sucesso', accessToken, refreshToken });
+    res.json({ message: 'Senha redefinida com sucesso' });
   } catch (error) {
     console.error(`Erro ao redefinir senha: ${error as Error}`);
     next(error);
