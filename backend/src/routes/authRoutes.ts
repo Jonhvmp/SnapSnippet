@@ -56,7 +56,6 @@ const validateRequest = (req: Request, res: Response, next: NextFunction): void 
   next(); // Passa para o próximo middleware/rota se não houver erros
 };
 
-
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   console.log(`Executando função assíncrona para a rota: ${req.path}`);
   Promise.resolve(fn(req, res, next)).catch((error) => {
@@ -73,10 +72,10 @@ router.post('/register', validate('register'), validateRequest, asyncHandler(reg
 router.post('/login', validate('login'), validateRequest, asyncHandler(loginUser)); // Login de usuário
 
 // Rotas de forgot e reset password
-router.post('/forgot-password', validate('forgot-password'), asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
-router.post('/reset-password', validate('reset-password'), asyncHandler(resetPassword)); // Redefinição de senha
+router.post('/forgot-password', validate('forgot-password'), validateRequest, asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
+router.post('/reset-password', validate('reset-password'), validateRequest, asyncHandler(resetPassword)); // Redefinição de senha
 
-router.use((err: any, req: any, res: any) => {
+router.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(`Erro no tratamento da rota: ${req.path}`, err);
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
