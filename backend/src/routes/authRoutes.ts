@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser, forgotPassword, resetPassword } from '../controllers/authController';
 import { body } from 'express-validator';
 import { ValidationChain, Result, validationResult } from 'express-validator';
+import { validateResetToken } from '../middlewares/validateResetToken';
 
 // Criando um method switch para validação de campos
 interface ValidationMethod {
@@ -73,7 +74,9 @@ router.post('/login', validate('login'), validateRequest, asyncHandler(loginUser
 
 // Rotas de forgot e reset password
 router.post('/forgot-password', validate('forgot-password'), validateRequest, asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
-router.post('/reset-password', validate('reset-password'), validateRequest, asyncHandler(resetPassword)); // Redefinição de senha
+
+router.post('/reset-password/:token', validateResetToken, validate('reset-password'), validateRequest, asyncHandler(resetPassword));
+
 
 router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
   if (err.name === 'ValidationError') {
