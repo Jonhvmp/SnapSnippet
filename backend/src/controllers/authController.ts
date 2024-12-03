@@ -130,23 +130,30 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       return handleValidationError(res, 'Usuário não encontrado');
     }
 
+    // Gera os tokens e ID da sessão
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const sessionId = crypto.randomBytes(16).toString('hex'); // Gera um ID de sessão único
 
+    // Cria o token no banco
     const token = new Token({
       userId: user._id,
       token: hashedToken,
-      expiresAt: Date.now() + 20 * 60 * 1000 // 20 minutos
+      sessionId: sessionId,
+      expiresAt: Date.now() + 20 * 60 * 1000, // 20 minutos
     });
 
     await token.save();
 
-    console.log(`Token de redefinição de senha gerado para o usuário: ${user.id}`);
+    console.log(`Token gerado para o usuário ID: ${user.id} com nome de usuário NOME: ${user.username}`);
+    console.log(`Token de redefinição de senha gerado: resetToken=${resetToken}, hashedToken=${hashedToken}, sessionId=${sessionId}`);
 
+    // Cria o link de redefinição de senha
     const resetLink = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
 
+    // Envia o e-mail de redefinição
     const html = `
-    <h1>Redefinição de Senha</h1>
+      <h1>Redefinição de Senha</h1>
       <p>Olá, ${user.username}!</p>
       <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para continuar:</p>
       <a href="${resetLink}">${resetLink}</a>

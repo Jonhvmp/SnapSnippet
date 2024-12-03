@@ -75,9 +75,16 @@ router.post('/login', validate('login'), validateRequest, asyncHandler(loginUser
 router.post('/forgot-password', validate('forgot-password'), validateRequest, asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
 router.post('/reset-password', validate('reset-password'), validateRequest, asyncHandler(resetPassword)); // Redefinição de senha
 
-router.use((err: any, req: Request, res: Response, next: NextFunction) => {
+router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map((error: any) => error.message);
+    res.status(400).json({ message: 'Erro de validação', errors: messages });
+    return;
+  }
+
   console.error(`Erro no tratamento da rota: ${req.path}`, err);
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
+
 
 export default router;
