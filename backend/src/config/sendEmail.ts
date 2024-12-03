@@ -12,8 +12,8 @@ export const sendEmail = async (to: string, subject: string, html: string, next:
       host: 'smtp.testmail.app',
       port: 587,
       auth: {
-        user: env.MAILTRAP_USER,
-        pass: env.MAILTRAP_PASSWORD,
+        user: env.TESTMAIL_USER,
+        pass: env.TESTMAIL_KEY,
       },
     });
 
