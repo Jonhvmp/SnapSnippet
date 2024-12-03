@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { User } from '../models/User';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
-import { TokenSchema } from '../models/Token';
+import { Token } from '../models/Token';
 
 dotenv.config();
 
@@ -126,7 +126,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
     const resetToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-    const token = new TokenSchema({
+    const token = new Token({
       userId: user._id,
       token: hashedToken,
       expiresAt: Date.now() + 20 * 60 * 1000 // 20 minutes
@@ -157,7 +157,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     }
 
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    const tokenDoc = await TokenSchema.findOne({ TokenSchema: hashedToken, expiresAt: { $gt: Date.now() } });
+    const tokenDoc = await Token.findOne({ token: hashedToken, expiresAt: { $gt: Date.now() } });
 
     if (!tokenDoc) {
       handleValidationError(res, 'Token inválido ou expirado');
@@ -173,7 +173,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     user.password = await bcrypt.hash(password, 10);
     await user.save();
 
-    await TokenSchema.deleteOne({ _id: tokenDoc._id });
+    await Token.deleteOne({ _id: tokenDoc._id });
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
