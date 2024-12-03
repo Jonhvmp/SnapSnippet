@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { registerUser, loginUser } from '../controllers/authController';
+import { registerUser, loginUser, forgotPassword, resetPassword } from '../controllers/authController';
 import { body } from 'express-validator';
 import { ValidationChain, Result, validationResult } from 'express-validator';
 
@@ -22,8 +22,25 @@ const validate: ValidationMethod = (method) => {
         body('email').exists().isEmail().withMessage('O e-mail é obrigatório e deve ser válido.'),
         body('password').exists().isString().withMessage('A senha é obrigatória.'),
       ];
+
+    case 'forgot-password':
+      return [
+        body('email').exists().isEmail().withMessage('O e-mail é obrigatório e deve ser válido.'),
+      ];
+
+    case 'reset-password':
+      return [
+        body('password').exists().isString().isLength({ min: 8, max: 128 }).withMessage('A senha é obrigatória e deve ter entre 8 e 128 caracteres.'),
+        body('confirmPassword').exists().isString().custom((value, { req }) => {
+          if (value !== req.body.password) {
+            throw new Error('As senhas não coincidem.');
+          }
+          return true;
+        }
+        ),
+      ];
     default:
-      return [];
+      throw new Error('Método de validação não encontrado.');
   }
 };
 
@@ -54,6 +71,10 @@ const router = Router();
 router.post('/register', validate('register'), validateRequest, asyncHandler(registerUser)); // Registro de um novo usuário
 
 router.post('/login', validate('login'), validateRequest, asyncHandler(loginUser)); // Login de usuário
+
+// Rotas de forgot e reset password
+router.post('/forgot-password', validate('forgot-password'), asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
+router.post('/reset-password', validate('reset-password'), asyncHandler(resetPassword)); // Redefinição de senha
 
 router.use((err: any, req: any, res: any) => {
   console.error(`Erro no tratamento da rota: ${req.path}`, err);
