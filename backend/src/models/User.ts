@@ -8,7 +8,11 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  loginAttempts: number;
+  lockUntil: Date | null;
   comparePassword: (candidatePassword: string) => Promise<boolean>;
+  incrementLoginAttempts: () => Promise<void>;
+  isLocked: () => boolean;
 }
 
 // Schema do Usuário com validações avançadas
@@ -40,6 +44,14 @@ const UserSchema = new Schema<IUser>(
       maxlength: [128, 'A senha deve ter no máximo 128 caracteres.'],
       select: false, // Exclui o campo da senha nas consultas por padrão
     },
+    loginAttempts: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
+    },
   },
   {
     timestamps: true, // Adiciona campos createdAt e updatedAt automaticamente
@@ -58,6 +70,26 @@ UserSchema.pre<IUser>('save', async function (next) {
 // Método para comparar a senha informada com o hash armazenado
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Método para incrementar tentativas de login
+UserSchema.methods.incrementLoginAttempts = async function (): Promise<void> {
+  if (this.isLocked()) {
+    return; // Não incrementa se já está bloqueado
+  }
+
+  this.loginAttempts += 1;
+
+  if (this.loginAttempts >= 5) {
+    this.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // Bloqueia por 30 minutos
+  }
+
+  await this.save();
+};
+
+// Verifica se o usuário está bloqueado
+UserSchema.methods.isLocked = function (): boolean {
+  return !!(this.lockUntil && this.lockUntil > new Date());
 };
 
 // Método para prevenir ataques DoS no login, omitindo erro específico
