@@ -1,19 +1,13 @@
-import nodemailer from 'nodemailer';
+// src/config/mailgunClient.ts
+import mailgun from 'mailgun.js';
+import formData from 'form-data';
 import env from './env';
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.mailgun.org', // Host correto para o Mailgun SMTP
-  port: 587, // Porta padrão para STARTTLS
-  secure: false,
-  auth: {
-    user: env.MAILGUN_USER,
-    pass: env.MAILGUN_API_KEY,
-  },
-  tls: {
-    rejectUnauthorized: false, // Desativa a verificação do certificado (se necessário)
-  },
-  logger: true, // Ativa logs detalhados
-  debug: true,  // Mostra mensagens de depuração
+const mg = new mailgun(formData);
+
+const mailgunClient = mg.client({
+  username: 'api',
+  key: env.MAILGUN_API_KEY, // Use sua API Key
 });
 
-export default transporter;
+export default mailgunClient;
