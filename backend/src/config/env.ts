@@ -7,6 +7,8 @@ interface Env {
   MONGODB_URI: string;
   JWT_SECRET: string;
   GITHUB_TOKEN: string;
+  MAILTRAP_USER: string;
+  MAILTRAP_PASSWORD: string;
 }
 
 // Criar uma função para fazer a conversão das variáveis de ambiente e definir valores padrão
@@ -16,6 +18,8 @@ const getEnv = (): Env => {
     MONGODB_URI: process.env.MONGODB_URI || '',
     JWT_SECRET: process.env.JWT_SECRET || '',
     GITHUB_TOKEN: process.env.GITHUB_TOKEN || '',
+    MAILTRAP_USER: process.env.MAILTRAP_USER || '',
+    MAILTRAP_PASSWORD: process.env.MAILTRAP_PASSWORD || '',
   };
 };
 
