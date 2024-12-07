@@ -60,7 +60,7 @@ const validateRequest = (req: Request, res: Response, next: NextFunction): void 
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   console.log(`Executando função assíncrona para a rota: ${req.path}`);
   Promise.resolve(fn(req, res, next)).catch((error) => {
-    console.error(`Erro ao executar função assíncrona para a rota: ${req.path}`, error);
+    console.error('Erro ao executar função assíncrona para a rota: %s', req.path, error);
     next(error);
   });
 };
