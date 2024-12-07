@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { Token } from '../models/Token';
 import env from '../config/env';
 import { sendEmail } from '../config/sendEmail';
+import { handleValidationError } from '../utils/validationUtils';
 
 const generateAccessToken = (user: any) => {
   return jwt.sign({ id: user.id, email: user.email }, env.JWT_SECRET as string, { expiresIn: '1h' });
@@ -24,10 +25,10 @@ const validatePassword = (password: string, confirmPassword: string): boolean =>
   return password.length >= 8 && password.length <= 128 && password === confirmPassword;
 };
 
-const handleValidationError = (res: Response, message: string): void => {
-  console.log(`Erro de validação: ${message}`);
-  res.status(400).json({ message });
-};
+// const handleValidationError = (res: Response, message: string): void => {
+//   console.log(`Erro de validação: ${message}`);
+//   res.status(400).json({ message });
+// };
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
