@@ -116,8 +116,6 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-
-
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email } = req.body;
