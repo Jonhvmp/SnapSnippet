@@ -32,7 +32,7 @@ export class GitHubApiService {
       const gistPromises = (response.data as any).map(async (gist: any) => {
         const fileName = gist.files ? Object.keys(gist.files)[0] : 'Sem nome';
         const extension = fileName.split('.').pop();
-        const language = extension ? this.languageMap[extension] || 'Desconhecido' : 'Desconhecida';
+        const language = extension ? this.languageMap[extension] || 'Desconhecida' : 'Desconhecida';
 
         const gistDetail = await axios.get(`https://api.github.com/gists/${gist.id}`, {
           headers: {
