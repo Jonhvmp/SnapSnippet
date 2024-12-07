@@ -46,12 +46,12 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return handleValidationError(res, 'O e-mail é obrigatório e deve ser válido.');
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: { $eq: email} });
     if (existingUser) {
       return handleValidationError(res, 'Email já está em uso');
     }
 
-    const existingUsername = await User.findOne({ username });
+    const existingUsername = await User.findOne({ username: { $eq: username } });
     if (existingUsername) {
       return handleValidationError(res, 'Nome de usuário já está em uso');
     }
@@ -84,7 +84,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       return handleValidationError(res, 'Todos os campos são obrigatórios');
     }
 
-    const user = await User.findOne({ email }).select('+password'); // Inclui a senha na consulta
+    const user = await User.findOne({ email: { $eq: email } }).select('+password'); // Inclui a senha na consulta
     if (!user) {
       return handleValidationError(res, 'Credenciais inválidas');
     }
