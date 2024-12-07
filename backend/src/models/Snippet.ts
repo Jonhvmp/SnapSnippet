@@ -85,7 +85,11 @@ SnippetSchema.pre<ISnippet>('save', function (next) {
   this.code = this.code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Remover atributos perigosos
-  this.code = this.code.replace(/on\w+="[^"]*"/g, '').replace(/on\w+='[^']*'/g, '');
+  let previousCode;
+  do {
+    previousCode = this.code;
+    this.code = this.code.replace(/on\w+="[^"]*"/g, '').replace(/on\w+='[^']*'/g, '');
+  } while (this.code !== previousCode);
 
   // Remover URLs perigosas em estilos inline
   this.code = this.code.replace(/style\s*=\s*["'][^"']*(javascript|data|vbscript):[^"']*["']/gi, 'style=""');
