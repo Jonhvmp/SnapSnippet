@@ -7,7 +7,7 @@ version: 2
 updates:
 # Atualizações para dependências do Node.js (npm)
   - package-ecosystem: "npm"
-    directory: "./backend" # Localização do arquivo package.json no diretório raiz
+    directory: "../backend" # Localização do arquivo package.json no diretório raiz
     schedule:
       interval: "weekly" # Verifica atualizações semanalmente
       day: "monday" # Executa às segundas-feiras
