@@ -91,9 +91,14 @@ export const updateSnippet = async (req: Request, res: Response, next: NextFunct
   try {
     const { title, description, language, tags, code, favorite } = req.body;
 
+    // Validate input data
+    if (typeof title !== 'string' || typeof description !== 'string' || typeof language !== 'string' || !Array.isArray(tags) || typeof code !== 'string' || typeof favorite !== 'boolean') {
+      return handleValidationError(res, 'Dados inválidos.');
+    }
+
     const snippet = await Snippet.findByIdAndUpdate(
       req.params.id,
-      { title, description, language, tags, code, favorite },
+      { $set: { title, description, language, tags, code, favorite } },
       { new: true, runValidators: true }
     );
 
