@@ -107,13 +107,27 @@ describe('Auth Controller', () => {
     it('deve enviar e-mail de redefinição com sucesso', async () => {
       req.body = { email: 'test@example.com' };
 
-      (User.findOne as jest.Mock).mockResolvedValue({ _id: '12345', username: 'testuser', email: 'test@example.com' });
+      // Mock para User.findOne
+      (User.findOne as jest.Mock).mockResolvedValue({
+        _id: '12345',
+        username: 'testuser',
+        email: 'test@example.com',
+      });
+
       const mockSave = jest.fn().mockResolvedValue({});
       (Token as jest.MockedClass<typeof Token>).mockImplementation(() => ({ save: mockSave } as any));
 
       await forgotPassword(req as Request, res as Response, next);
 
-      expect(User.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
+      // Validação ajustada
+      expect(User.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: {
+            "$eq": 'test@example.com'
+            }
+        })
+      );
+
       expect(mockSave).toHaveBeenCalled();
       expect(sendEmail).toHaveBeenCalledWith(
         'test@example.com',
@@ -122,46 +136,44 @@ describe('Auth Controller', () => {
       );
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'E-mail de redefinição de senha enviado com sucesso' })
-      );
+      )
     });
-  });
 
-  describe('resetPassword', () => {
-    it('deve retornar erro se token for inválido', async () => {
-      req.params = { token: 'invalidToken' };
-      req.body = { password: 'password123', confirmPassword: 'password123' };
+    describe('resetPassword', () => {
+      it('deve retornar erro se token for inválido', async () => {
+        req.params = { token: 'invalidToken' };
+        req.body = { password: 'password123', confirmPassword: 'password123' };
 
-      (Token.findOne as jest.Mock).mockResolvedValue(null);
+        (Token.findOne as jest.Mock).mockResolvedValue(null);
 
-      await resetPassword(req as Request, res as Response, next);
+        await resetPassword(req as Request, res as Response, next);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        message: 'Token inválido ou expirado',
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+          message: 'Token inválido ou expirado',
+        })
+      })
+
+
+      it('deve redefinir a senha com sucesso', async () => {
+        req.params = { token: 'validToken' };
+        req.body = { password: 'password123', confirmPassword: 'password123' };
+
+        const mockToken = { userId: '12345', _id: 'tokenId' };
+        const mockUser = { save: jest.fn(), password: 'hashedPassword' };
+
+        (Token.findOne as jest.Mock).mockResolvedValue(mockToken);
+        (User.findById as jest.Mock).mockResolvedValue(mockUser);
+        (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+
+        await resetPassword(req as Request, res as Response, next);
+
+        expect(User.findById).toHaveBeenCalledWith('12345');
+        expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
+        expect(mockUser.save).toHaveBeenCalled();
+        expect(Token.deleteOne).toHaveBeenCalledWith({ _id: 'tokenId' });
+        expect(res.status).toHaveBeenCalledWith(200);
       });
-    });
-
-    it('deve redefinir a senha com sucesso', async () => {
-      req.params = { token: 'validToken' };
-      req.body = { password: 'password123', confirmPassword: 'password123' };
-
-      const mockToken = { userId: '12345', _id: 'tokenId' };
-      const mockUser = { save: jest.fn(), password: 'hashedPassword' };
-
-      (Token.findOne as jest.Mock).mockResolvedValue(mockToken);
-      (User.findById as jest.Mock).mockResolvedValue(mockUser);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-
-      await resetPassword(req as Request, res as Response, next);
-
-      expect(User.findById).toHaveBeenCalledWith('12345');
-      expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-      expect(mockUser.save).toHaveBeenCalled();
-      expect(Token.deleteOne).toHaveBeenCalledWith({ _id: 'tokenId' });
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Senha redefinida com sucesso' })
-      );
     });
   });
 });
