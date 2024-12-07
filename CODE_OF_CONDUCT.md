@@ -117,7 +117,7 @@ the community.
 
 This Code of Conduct is available in the following languages:
 - **English**: [Click here for the English version](https://github.com/path/to/code-of-conduct)
-- **Português**: [Clique aqui para a versão em português](https://github.com/path/to/code-of-conduct-pt)
+- **Português**: [Clique aqui para a versão em português](https://github.com/Jonhvmp/SnapSnippet/blob/main/CODE_OF_CONDUCT-pt.md)
 
 ## Attribution
 
