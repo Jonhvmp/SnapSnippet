@@ -1,0 +1,19 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+# Atualizações para dependências do Node.js (npm)
+  - package-ecosystem: "npm"
+    directory: "./backend" # Localização do arquivo package.json no diretório raiz
+    schedule:
+      interval: "weekly" # Verifica atualizações semanalmente
+      day: "monday" # Executa às segundas-feiras
+      time: "08:00" # Horário UTC
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    open-pull-requests-limit: 10
+    rebase-strategy: "auto"
