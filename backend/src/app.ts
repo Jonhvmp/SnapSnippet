@@ -7,7 +7,6 @@ import { connectDB } from './config/database'
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { authenticatedLimiter, limiter } from './utils/rateLimiting';
 
 const app = express();
 
@@ -29,9 +28,6 @@ app.use('/api/auth', authRoutes);
 // app.use('/users', userRoutes);
 
 app.use('/api/snippets', snippetRoutes);
-
-app.use(limiter); // Aplicando o rate limiter
-app.use('/api', authenticatedLimiter) // Aplicando o rate limiter apenas para rotas autenticadas
 
 // Passando uma mensagem dinâmica para o middleware de erro
 app.use((req: Request, res: Response, next: NextFunction): void => {

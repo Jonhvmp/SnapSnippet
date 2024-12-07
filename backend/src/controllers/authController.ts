@@ -91,7 +91,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     // Verifica se o usuário está bloqueado
     if (user.isLocked()) {
-      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.');
+      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.'); 
     }
 
     const isMatch = await user.comparePassword(password);
