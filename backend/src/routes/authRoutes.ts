@@ -85,7 +85,7 @@ router.use((err: any, req: Request, res: Response, next: NextFunction): void => 
     return;
   }
 
-  console.error(`Erro no tratamento da rota: ${req.path}`, err);
+  console.error('Erro no tratamento da rota: %s', req.path, err);
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
 
