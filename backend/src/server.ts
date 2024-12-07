@@ -1,9 +1,7 @@
 import app from './app';
-import dotenv from 'dotenv';
+import env from './config/env';
 
-dotenv.config();
-
-const PORT = process.env.PORT || '';
+const PORT = env.PORT || '';
 
 // teste de rota inicial ('/)
 app.get('get', (req, res) => {
