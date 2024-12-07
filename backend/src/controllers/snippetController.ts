@@ -3,6 +3,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { Snippet } from '../models/Snippet';
 import { GitHubApiService } from '../services/GitHubApiService';
+import { v4 as uuidv4 } from 'uuid';
+import { validationResult } from 'express-validator';
+import { handleValidationError } from '../utils/validationUtils';
 
 // Cria um novo snippet
 export const createSnippet = async (req: Request, res: Response, next: NextFunction) => {
@@ -11,11 +14,11 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
 
     // Validações adicionais de segurança
     if (typeof code !== 'string' || code.length === 0) {
-      return res.status(400).json({ error: 'Código inválido ou ausente.' });
+      return handleValidationError(res, 'Código inválido ou ausente.');
     }
 
     if (!req.user) {
-      return res.status(401).json({ error: 'Usuário não autenticado.' });
+      return handleValidationError(res, 'Usuário não autenticado.');
     }
 
     const snippet = new Snippet({
@@ -45,7 +48,7 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
     }
 
     if (snippet.code === '' || snippet.code === undefined || snippet.code === null) {
-      return res.status(400).json({ error: 'Código inválido ou ausente.' });
+      return handleValidationError(res, 'Código inválido ou ausente.');
     }
 
     await snippet.save();
@@ -60,7 +63,7 @@ export const createSnippet = async (req: Request, res: Response, next: NextFunct
 export const fetchMySnippets = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Usuário não autenticado.' });
+      return handleValidationError(res, 'Usuário não autenticado.');
     }
     const snippets = await Snippet.find({ user: req.user.id });
     res.json(snippets);
@@ -74,7 +77,7 @@ export const fetchMySnippets = async (req: Request, res: Response, next: NextFun
 export const getSnippet = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const snippet = await Snippet.findById(req.params.id);
-    if (!snippet) return res.status(404).json({ error: 'Snippet não encontrado.' });
+    if (!snippet) return handleValidationError(res, 'Snippet não encontrado.');
 
     res.json(snippet);
   } catch (error) {
@@ -94,7 +97,7 @@ export const updateSnippet = async (req: Request, res: Response, next: NextFunct
       { new: true, runValidators: true }
     );
 
-    if (!snippet) return res.status(404).json({ error: 'Snippet não encontrado.' });
+    if (!snippet) return handleValidationError(res, 'Snippet não encontrado.');
 
     res.json(snippet);
   } catch (error) {
@@ -107,7 +110,7 @@ export const updateSnippet = async (req: Request, res: Response, next: NextFunct
 export const deleteSnippet = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const snippet = await Snippet.findByIdAndDelete(req.params.id);
-    if (!snippet) return res.status(404).json({ error: 'Snippet não encontrado.' });
+    if (!snippet) return handleValidationError(res, 'Snippet não encontrado.');
 
     res.status(204).send();
   } catch (error) {
@@ -134,7 +137,7 @@ export const fetchMySnippetsFavorite = async (req: Request, res: Response, next:
 export const markFavorite = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const snippet = await Snippet.findById(req.params.id);
-    if (!snippet) return res.status(404).json({ error: 'Snippet não encontrado.' });
+    if (!snippet) return handleValidationError(res, 'Snippet não encontrado.');
 
     snippet.favorite = !snippet.favorite;
     await snippet.save();
@@ -157,3 +160,46 @@ export const fetchPublicSnippets = async (req: Request, res: Response, next: Nex
     next(error);
   }
 };
+
+export const shareSnippet = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const snippet = await Snippet.findById(req.params.id);
+    if (!snippet) return handleValidationError(res, 'Snippet não encontrado.');
+
+    // Verifica se o snippet pertence ao usuário autenticado
+    if (snippet.user.toString() !== req.user?.id) {
+      return handleValidationError(res, 'Snippet não pertence ao usuário autenticado.');
+    }
+
+    if (!snippet.sharedLink) {
+      const uniqueLink = `${req.protocol}://${req.get('host')}/shared/${uuidv4()}`;
+      snippet.sharedLink = uniqueLink;
+      await snippet.save();
+    }
+
+    res.json({ link: snippet.sharedLink });
+  } catch (error) {
+    console.error('Erro ao compartilhar snippet:', error);
+    next(error);
+  }
+};
+
+export const fetchSharedSnippet = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const snippet = await Snippet.findOne({ sharedLink: req.params.link });
+    if (!snippet) return handleValidationError(res, 'Snippet compartilhado não encontrado.');
+
+    res.json({
+      id: snippet._id,
+      title: snippet.title,
+      description: snippet.description,
+      language: snippet.language,
+      code: snippet.code,
+      createdAt: snippet.createdAt,
+    });
+  } catch (error) {
+    console.error('Erro ao buscar snippet compartilhado:', error);
+    next(error);
+  }
+};
+

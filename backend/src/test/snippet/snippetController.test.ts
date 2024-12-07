@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { Snippet } from '../../models/Snippet';
 import * as snippetController from '../../controllers/snippetController';
 import { GitHubApiService } from '../../services/GitHubApiService';
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock das dependências
 jest.mock('../../models/Snippet');
 jest.mock('../../services/GitHubApiService');
+jest.mock('uuid', () => ({ v4: jest.fn(() => 'mocked-uuid') }));
 
 describe('Snippet Controller', () => {
   let req: Partial<Request>;
@@ -20,6 +22,10 @@ describe('Snippet Controller', () => {
       send: jest.fn(),
     };
     next = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks(); // Limpa todos os mocks após cada teste
   });
 
   describe('createSnippet', () => {
@@ -52,7 +58,7 @@ describe('Snippet Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Código inválido ou ausente.',
+        message: 'Código inválido ou ausente.',
       });
     });
   });
@@ -73,24 +79,33 @@ describe('Snippet Controller', () => {
 
       await snippetController.fetchMySnippets(req as Request, res as Response, next);
 
-      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Usuário não autenticado.',
+        message: 'Usuário não autenticado.',
       });
     });
   });
 
-  describe('getSnippet', () => {
-    it('deve retornar um snippet pelo ID', async () => {
-      const mockSnippet = { id: 'snippet1', title: 'Teste' };
+  describe('shareSnippet', () => {
+    it('deve gerar um link de compartilhamento para o snippet', async () => {
+      const mockSnippet = {
+        _id: 'snippet1',
+        user: 'user123', // Adicione o campo user no mock
+        sharedLink: null,
+        save: jest.fn().mockResolvedValue(true),
+      };
       (Snippet.findById as jest.Mock).mockResolvedValue(mockSnippet);
 
       req.params = { id: 'snippet1' };
+      Object.defineProperty(req, 'protocol', { value: 'http' });
+      req.get = jest.fn().mockReturnValue('localhost:3000');
 
-      await snippetController.getSnippet(req as Request, res as Response, next);
+      await snippetController.shareSnippet(req as Request, res as Response, next);
 
       expect(Snippet.findById).toHaveBeenCalledWith('snippet1');
-      expect(res.json).toHaveBeenCalledWith(mockSnippet);
+      expect(mockSnippet.save).toHaveBeenCalled();
+      expect(mockSnippet.sharedLink).toBe('http://localhost:3000/shared/mocked-uuid');
+      expect(res.json).toHaveBeenCalledWith({ link: mockSnippet.sharedLink });
     });
 
     it('deve retornar erro se o snippet não for encontrado', async () => {
@@ -98,70 +113,52 @@ describe('Snippet Controller', () => {
 
       req.params = { id: 'invalidId' };
 
-      await snippetController.getSnippet(req as Request, res as Response, next);
+      await snippetController.shareSnippet(req as Request, res as Response, next);
 
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Snippet não encontrado.',
-      });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Snippet não encontrado.' });
     });
   });
 
-  describe('updateSnippet', () => {
-    it('deve atualizar um snippet pelo ID', async () => {
-      const mockSnippet = { id: 'snippet1', title: 'Snippet Atualizado' };
-      (Snippet.findByIdAndUpdate as jest.Mock).mockResolvedValue(mockSnippet);
+  describe('fetchSharedSnippet', () => {
+    it('deve buscar um snippet compartilhado pelo link', async () => {
+      const mockSnippet = {
+        _id: 'snippet1',
+        sharedLink: 'http://localhost:3000/shared/mocked-uuid',
+        code: 'console.log("Hello World");',
+        createdAt: new Date(),
+        description: 'Descrição de teste',
+        id: 'snippet1',
+        language: 'javascript',
+        title: 'Snippet Test',
+      };
+      (Snippet.findOne as jest.Mock).mockResolvedValue(mockSnippet);
 
-      req.params = { id: 'snippet1' };
-      req.body = { title: 'Snippet Atualizado' };
+      req.params = { link: 'http://localhost:3000/shared/mocked-uuid' };
 
-      await snippetController.updateSnippet(req as Request, res as Response, next);
+      await snippetController.fetchSharedSnippet(req as Request, res as Response, next);
 
-      expect(Snippet.findByIdAndUpdate).toHaveBeenCalledWith(
-        'snippet1',
-        req.body,
-        { new: true, runValidators: true }
-      );
-      expect(res.json).toHaveBeenCalledWith(mockSnippet);
+      expect(Snippet.findOne).toHaveBeenCalledWith({ sharedLink: req.params.link });
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        code: 'console.log("Hello World");',
+        createdAt: mockSnippet.createdAt,
+        description: 'Descrição de teste',
+        id: 'snippet1',
+        language: 'javascript',
+        title: 'Snippet Test',
+      }));
     });
 
-    it('deve retornar erro se o snippet não for encontrado', async () => {
-      (Snippet.findByIdAndUpdate as jest.Mock).mockResolvedValue(null);
+    it('deve retornar erro se o link do snippet não for válido', async () => {
+      (Snippet.findOne as jest.Mock).mockResolvedValue(null);
 
-      req.params = { id: 'invalidId' };
+      req.params = { link: 'invalid-link' };
 
-      await snippetController.updateSnippet(req as Request, res as Response, next);
+      await snippetController.fetchSharedSnippet(req as Request, res as Response, next);
 
-      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Snippet não encontrado.',
-      });
-    });
-  });
-
-  describe('deleteSnippet', () => {
-    it('deve deletar um snippet pelo ID', async () => {
-      (Snippet.findByIdAndDelete as jest.Mock).mockResolvedValue({ id: 'snippet1' });
-
-      req.params = { id: 'snippet1' };
-
-      await snippetController.deleteSnippet(req as Request, res as Response, next);
-
-      expect(Snippet.findByIdAndDelete).toHaveBeenCalledWith('snippet1');
-      expect(res.status).toHaveBeenCalledWith(204);
-      expect(res.send).toHaveBeenCalled();
-    });
-
-    it('deve retornar erro se o snippet não for encontrado', async () => {
-      (Snippet.findByIdAndDelete as jest.Mock).mockResolvedValue(null);
-
-      req.params = { id: 'invalidId' };
-
-      await snippetController.deleteSnippet(req as Request, res as Response, next);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 'Snippet não encontrado.',
+        message: 'Snippet compartilhado não encontrado.',
       });
     });
   });

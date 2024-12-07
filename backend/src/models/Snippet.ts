@@ -1,4 +1,3 @@
-// src/models/Snippet.ts
 import { Schema, model, Document } from 'mongoose';
 
 // Interface para tipagem TypeScript
@@ -10,6 +9,7 @@ export interface ISnippet extends Document {
   user: Schema.Types.ObjectId;
   code: string;
   favorite: boolean;
+  sharedLink: string | null; // Novo campo
   createdAt: Date;
 }
 
@@ -62,6 +62,12 @@ const SnippetSchema = new Schema<ISnippet>(
     favorite: {
       type: Boolean,
       default: false,
+    },
+    sharedLink: {
+      type: String,
+      default: null, // Indica que o snippet não é compartilhado inicialmente
+      unique: true,  // Garante que o link é único
+      sparse: true,  // Permite valores nulos e únicos
     },
     createdAt: {
       type: Date,

@@ -1,7 +1,18 @@
 import { Router } from 'express';
 import { validateToken } from '../middlewares/authMiddleware';
 import { errorMiddleware } from '../middlewares/errorMiddleware';
-import { fetchPublicSnippets, createSnippet, updateSnippet, deleteSnippet, getSnippet, markFavorite, fetchMySnippets, fetchMySnippetsFavorite } from '../controllers/snippetController';
+import {
+  createSnippet,
+  updateSnippet,
+  getSnippet,
+  deleteSnippet,
+  markFavorite,
+  fetchMySnippets,
+  fetchMySnippetsFavorite,
+  fetchPublicSnippets,
+  fetchSharedSnippet,
+  shareSnippet,
+} from '../controllers/snippetController';
 
 const router = Router();
 
@@ -29,6 +40,12 @@ router.get('/search', validateToken, (req, res, next) => {
 router.get('/tags', validateToken, (req, res, next) => {
   fetchPublicSnippets(req, res, next).catch(next);
 }); // Busca snippets por tag
+
+router.get('/shared/:link', fetchSharedSnippet); // Busca snippets compartilhados com o usuário
+
+router.post('/:id/share', validateToken, (req, res, next) => {
+  shareSnippet(req, res, next).catch(next);
+}); // Compartilha um snippet
 
 router.put('/:id', validateToken, (req, res, next) => {
   updateSnippet(req, res, next).catch(next);
