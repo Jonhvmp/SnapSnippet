@@ -74,7 +74,7 @@ Os líderes da comunidade seguirão estas Diretrizes de Impacto Comunitário par
 
 Este Código de Conduta está disponível nos seguintes idiomas:
 - **Inglês**: [Clique aqui para a versão em inglês](https://github.com/Jonhvmp/SnapSnippet?tab=coc-ov-file#readme)
-- **Português**: [Clique aqui para a versão em português](https://github.com/path/to/code-of-conduct-pt)
+- **Português**: [Clique aqui para a versão em português](https://github.com/Jonhvmp/SnapSnippet/blob/main/CODE_OF_CONDUCT-pt.md)
 
 ## Atribuição
 
