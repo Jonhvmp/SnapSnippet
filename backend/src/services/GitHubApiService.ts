@@ -1,11 +1,7 @@
 // src/services/GitHubApiService.ts
 
 import axios from 'axios';
-// import env from '../config/env'
-
-import dotenv from 'dotenv'
-
-dotenv.config();
+import env from '../config/env'
 export class GitHubApiService {
   private static languageMap: { [key: string]: string } = {
     js: 'JavaScript',
@@ -29,19 +25,19 @@ export class GitHubApiService {
       const response = await axios.get(apiUrl, {
         headers: {
           Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, // Token de acesso do GitHub
+          Authorization: `Bearer ${env.GITHUB_TOKEN}`, // Token de acesso do GitHub
         },
       });
 
       const gistPromises = (response.data as any).map(async (gist: any) => {
         const fileName = gist.files ? Object.keys(gist.files)[0] : 'Sem nome';
         const extension = fileName.split('.').pop();
-        const language = extension ? this.languageMap[extension] || 'Desconhecido' : 'Desconhecida';
+        const language = extension ? this.languageMap[extension] || 'Desconhecida' : 'Desconhecida';
 
         const gistDetail = await axios.get(`https://api.github.com/gists/${gist.id}`, {
           headers: {
             Accept: 'application/vnd.github.v3+json',
-            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, // Token de acesso do GitHub
+            Authorization: `Bearer ${env.GITHUB_TOKEN}`, // Token de acesso do GitHub
           },
         });
 

@@ -116,7 +116,6 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email } = req.body;
@@ -153,12 +152,43 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
     // Envia o e-mail de redefinição
     const html = `
-      <h1>Redefinição de Senha</h1>
-      <p>Olá, ${user.username}!</p>
-      <p>Você solicitou a redefinição de sua senha. Clique no link abaixo para continuar:</p>
-      <a href="${resetLink}">${resetLink}</a>
-      <p>O link expira em 20 minutos.</p>
-      <p>Se você não solicitou esta ação, ignore este e-mail.</p>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h1 style="color: #007bff; text-align: center;">Redefinição de Senha</h1>
+
+        <p>Olá, <strong>${user.username}</strong>!</p>
+
+        <p>Você solicitou a redefinição de sua senha. Para continuar, clique no botão abaixo:</p>
+
+        <p style="text-align: center; margin: 20px 0;">
+          <a href="${resetLink}" style="
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+          ">Redefinir Senha</a>
+        </p>
+
+        <p>Se o botão acima não funcionar, copie e cole o link abaixo no seu navegador:</p>
+        <p style="word-wrap: break-word; background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${resetLink}</p>
+
+        <p style="color: #555;">O link expira em <strong>20 minutos</strong>.</p>
+
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+        <p style="font-size: 12px; color: #777;">
+          Se você precisar de ajuda, entre em contato com nosso suporte.
+        </p>
+        <p style="font-size: 12px; color: #777;">
+          Este é um e-mail automático, por favor, não responda.
+        </p>
+        <p style="font-size: 12px; color: #777;">
+          Se você não solicitou esta ação, pode ignorar este e-mail com segurança.
+        </p>
+      </div>
     `;
 
     await sendEmail(user.email, 'Redefinição de Senha', html);
@@ -183,7 +213,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
       return handleValidationError(res, 'A senha é obrigatória e deve ter entre 8 e 128 caracteres e as senhas devem coincidir.');
     }
 
-    // O token já foi validado no middleware
+    // Valida o token de redefinição de senha
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     const tokenDoc = await Token.findOne({ token: hashedToken, expiresAt: { $gt: Date.now() } });
 
@@ -208,7 +238,17 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
     console.log(`Senha redefinida para o usuário: ${user.id}`);
 
-    res.json({ message: 'Senha redefinida com sucesso' });
+    // Gera os tokens de acesso e refresh
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Redireciona o usuário para a página inicial com os tokens
+    res.status(200).json({
+      message: 'Senha redefinida com sucesso',
+      redirect: './',
+      accessToken,
+      refreshToken,
+    });
   } catch (error) {
     console.error(`Erro ao redefinir senha: ${error as Error}`);
     next(error);

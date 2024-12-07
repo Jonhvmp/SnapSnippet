@@ -17,12 +17,13 @@
     /* Emit */
     "outDir": "./dist",                                  // Define o diretório de saída para arquivos compilados.
     "rootDir": "./src",                                  // Define o diretório raiz para os arquivos TypeScript.
+    "types": ["jest"],                                 // Inclui tipos de teste do Jest.
     "sourceMap": true,                                   // Gera arquivos de mapa de origem para depuração.
 
     /* Type Checking */
     "strict": true,                                      // Habilita todas as verificações de tipo estritas.
     "skipLibCheck": true                                 // Ignora a verificação de tipo em arquivos de declaração (.d.ts).
   },
-  "include": ["src"],                                    // Inclui apenas a pasta 'src' para compilação.
+  "include": ["src/**/*"],                                    // Inclui apenas a pasta 'src' para compilação.
   "exclude": ["node_modules", "dist"]                    // Exclui 'node_modules' e 'dist' da compilação.
 }

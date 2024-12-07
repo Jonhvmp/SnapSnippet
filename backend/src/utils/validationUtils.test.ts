@@ -1,22 +1,24 @@
-import { expect } from 'chai';
-import { Response } from 'express';
 import { handleValidationError } from './validationUtils';
+import { Response } from 'express';
 
 describe('handleValidationError', () => {
-  it('deve retornar status 400 com a mensagem de erro', () => {
-    // Mock do objeto Response
-    const res: Partial<Response> = {
-      status: function (code: number): Response {
-        expect(code).to.equal(400); // Valida o status
-        return this as Response; // Retorna o mock como Response
-      },
-      json: function (data: { message: string }): Response {
-        expect(data).to.deep.equal({ message: 'Erro de validação' }); // Valida o JSON retornado
-        return this as Response; // Retorna o mock como Response
-      },
-    };
+  let mockResponse: Partial<Response>;
+  let statusMock: jest.Mock;
+  let jsonMock: jest.Mock;
 
-    // Chama a função com o mock criado
-    handleValidationError(res as Response, 'Erro de validação');
+  beforeEach(() => {
+    jsonMock = jest.fn();
+    statusMock = jest.fn().mockReturnValue({ json: jsonMock });
+    mockResponse = {
+      status: statusMock,
+    };
+  });
+
+  it('Deve definir o status como 400 e retornar a mensagem de erro', () => {
+    const message = 'Erro de validação';
+    handleValidationError(mockResponse as Response, message);
+
+    expect(statusMock).toHaveBeenCalledWith(400);
+    expect(jsonMock).toHaveBeenCalledWith({ message });
   });
 });
