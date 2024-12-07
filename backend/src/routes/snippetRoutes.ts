@@ -12,6 +12,7 @@ import {
   fetchPublicSnippets,
   fetchSharedSnippet,
   shareSnippet,
+  // deleteSharedLink,
 } from '../controllers/snippetController';
 import { authenticatedLimiter, limiter } from '../utils/rateLimiting';
 
@@ -42,11 +43,18 @@ router.get('/tags', authenticatedLimiter, validateToken, (req, res, next) => {
   fetchPublicSnippets(req, res, next).catch(next);
 }); // Busca snippets por tag
 
-router.get('/shared/:link', limiter, fetchSharedSnippet); // Busca snippets compartilhados com o usuário
+router.get('/shared/:link', limiter, (req, res, next) => {
+  fetchSharedSnippet(req, res, next).catch(next);
+}); // Busca snippets compartilhados com o usuário
 
 router.post('/:id/share', authenticatedLimiter, validateToken, (req, res, next) => {
   shareSnippet(req, res, next).catch(next);
 }); // Compartilha um snippet
+
+// rota para deletar um link compartilhado
+// router.delete('/:id/share', authenticatedLimiter, validateToken, (req, res, next) => {
+//   deleteSharedLink(req, res, next).catch(next);
+// }); // Deleta um link compartilhado
 
 router.put('/:id', authenticatedLimiter, validateToken, (req, res, next) => {
   updateSnippet(req, res, next).catch(next);
