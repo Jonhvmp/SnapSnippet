@@ -91,9 +91,19 @@ export const updateSnippet = async (req: Request, res: Response, next: NextFunct
   try {
     const { title, description, language, tags, code, favorite } = req.body;
 
+    // Validate input data
+    if (typeof title !== 'string' ||
+      typeof description !== 'string' ||
+      typeof language !== 'string' ||
+      !Array.isArray(tags) ||
+      typeof code !== 'string' ||
+      typeof favorite !== 'boolean') {
+      return handleValidationError(res, 'Dados inválidos.');
+    }
+
     const snippet = await Snippet.findByIdAndUpdate(
       req.params.id,
-      { title, description, language, tags, code, favorite },
+      { $set: { title, description, language, tags, code, favorite } },
       { new: true, runValidators: true }
     );
 
@@ -123,7 +133,7 @@ export const deleteSnippet = async (req: Request, res: Response, next: NextFunct
 export const fetchMySnippetsFavorite = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Usuário não autenticado.' });
+      return handleValidationError(res, 'Usuário não autenticado.');
     }
     const snippets = await Snippet.find({ user: req.user.id, favorite: true });
     res.json(snippets);
@@ -172,12 +182,13 @@ export const shareSnippet = async (req: Request, res: Response, next: NextFuncti
     }
 
     if (!snippet.sharedLink) {
-      const uniqueLink = `${req.protocol}://${req.get('host')}/shared/${uuidv4()}`;
+      const uniqueLink = `${req.protocol}://${req.get('host')}/api/snippets/shared/${uuidv4()}`;
       snippet.sharedLink = uniqueLink;
       await snippet.save();
     }
 
     res.json({ link: snippet.sharedLink });
+    console.log('Snippet compartilhado:', snippet);
   } catch (error) {
     console.error('Erro ao compartilhar snippet:', error);
     next(error);
@@ -186,8 +197,11 @@ export const shareSnippet = async (req: Request, res: Response, next: NextFuncti
 
 export const fetchSharedSnippet = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const snippet = await Snippet.findOne({ sharedLink: req.params.link });
-    if (!snippet) return handleValidationError(res, 'Snippet compartilhado não encontrado.');
+    const link = `${req.protocol}://${req.get('host')}/api/snippets/shared/${req.params.link}`;
+    const snippet = await Snippet.findOne({ sharedLink: link });
+    if (!snippet) {
+      return res.status(404).json({ message: 'Snippet compartilhado não encontrado.' });
+    }
 
     res.json({
       id: snippet._id,
@@ -203,3 +217,18 @@ export const fetchSharedSnippet = async (req: Request, res: Response, next: Next
   }
 };
 
+// deleta link compartilhado
+// export const deleteSharedLink = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const snippet = await Snippet.findById(req.params.id);
+//     if (!snippet) return handleValidationError(res, 'Snippet não encontrado.');
+
+//     snippet.sharedLink = null;
+//     await snippet.save();
+
+//     res.json({ message: 'Link compartilhado removido.' });
+//   } catch (error) {
+//     console.error('Erro ao deletar link compartilhado:', error);
+//     next(error);
+//   }
+// };

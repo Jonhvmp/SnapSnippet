@@ -3,6 +3,7 @@ import { registerUser, loginUser, forgotPassword, resetPassword } from '../contr
 import { body } from 'express-validator';
 import { ValidationChain, Result, validationResult } from 'express-validator';
 import { validateResetToken } from '../middlewares/validateResetToken';
+import { limiter } from '../utils/rateLimiting';
 
 // Criando um method switch para validação de campos
 interface ValidationMethod {
@@ -60,7 +61,7 @@ const validateRequest = (req: Request, res: Response, next: NextFunction): void 
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   console.log(`Executando função assíncrona para a rota: ${req.path}`);
   Promise.resolve(fn(req, res, next)).catch((error) => {
-    console.error(`Erro ao executar função assíncrona para a rota: ${req.path}`, error);
+    console.error('Erro ao executar função assíncrona para a rota: %s', req.path, error);
     next(error);
   });
 };
@@ -68,14 +69,14 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 const router = Router();
 
 // Rotas para usuários
-router.post('/register', validate('register'), validateRequest, asyncHandler(registerUser)); // Registro de um novo usuário
+router.post('/register', validate('register'), limiter, validateRequest, asyncHandler(registerUser)); // Registro de um novo usuário
 
-router.post('/login', validate('login'), validateRequest, asyncHandler(loginUser)); // Login de usuário
+router.post('/login', validate('login'), limiter, validateRequest, asyncHandler(loginUser)); // Login de usuário
 
 // Rotas de forgot e reset password
-router.post('/forgot-password', validate('forgot-password'), validateRequest, asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
+router.post('/forgot-password', limiter, validate('forgot-password'), validateRequest, asyncHandler(forgotPassword)); // Solicitação de redefinição de senha
 
-router.post('/reset-password/:token', validateResetToken, validate('reset-password'), validateRequest, asyncHandler(resetPassword));
+router.post('/reset-password/:token', limiter, validateResetToken, validate('reset-password'), validateRequest, asyncHandler(resetPassword));
 
 
 router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
@@ -85,7 +86,7 @@ router.use((err: any, req: Request, res: Response, next: NextFunction): void => 
     return;
   }
 
-  console.error(`Erro no tratamento da rota: ${req.path}`, err);
+  console.error('Erro no tratamento da rota: %s', req.path, err);
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
 

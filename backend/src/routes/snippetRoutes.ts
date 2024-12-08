@@ -12,54 +12,63 @@ import {
   fetchPublicSnippets,
   fetchSharedSnippet,
   shareSnippet,
+  // deleteSharedLink,
 } from '../controllers/snippetController';
+import { authenticatedLimiter, limiter } from '../utils/rateLimiting';
 
 const router = Router();
 
 // Rotas para snippets
-router.get('/public-snippets', validateToken, (req, res, next) => {
+router.get('/public-snippets', authenticatedLimiter, validateToken, (req, res, next) => {
   fetchPublicSnippets(req, res, next).catch(next); // Propaga erros ao middleware
 }); // Busca snippets públicos
 
-router.post('/create-snippets', validateToken, (req, res, next) => {
+router.post('/create-snippets', authenticatedLimiter, validateToken, (req, res, next) => {
   createSnippet(req, res, next).catch(next);
 }); // Criação de um novo snippet
 
-router.get('/my-snippets', validateToken, (req, res, next) => {
+router.get('/my-snippets', authenticatedLimiter, validateToken, (req, res, next) => {
   fetchMySnippets(req, res, next).catch(next);
 }); // Busca snippets do usuário
 
-router.get('/my-favorites', validateToken, (req, res, next) => {
+router.get('/my-favorites', authenticatedLimiter, validateToken, (req, res, next) => {
   fetchMySnippetsFavorite(req, res, next).catch(next);
 }); // Busca snippets favoritos do usuário
 
-router.get('/search', validateToken, (req, res, next) => {
+router.get('/search', authenticatedLimiter, validateToken, (req, res, next) => {
   fetchPublicSnippets(req, res, next).catch(next);
 }); // Busca snippets por termo
 
-router.get('/tags', validateToken, (req, res, next) => {
+router.get('/tags', authenticatedLimiter, validateToken, (req, res, next) => {
   fetchPublicSnippets(req, res, next).catch(next);
 }); // Busca snippets por tag
 
-router.get('/shared/:link', fetchSharedSnippet); // Busca snippets compartilhados com o usuário
+router.get('/shared/:link', limiter, (req, res, next) => {
+  fetchSharedSnippet(req, res, next).catch(next);
+}); // Busca snippets compartilhados com o usuário
 
-router.post('/:id/share', validateToken, (req, res, next) => {
+router.post('/:id/share', authenticatedLimiter, validateToken, (req, res, next) => {
   shareSnippet(req, res, next).catch(next);
 }); // Compartilha um snippet
 
-router.put('/:id', validateToken, (req, res, next) => {
+// rota para deletar um link compartilhado
+// router.delete('/:id/share', authenticatedLimiter, validateToken, (req, res, next) => {
+//   deleteSharedLink(req, res, next).catch(next);
+// }); // Deleta um link compartilhado
+
+router.put('/:id', authenticatedLimiter, validateToken, (req, res, next) => {
   updateSnippet(req, res, next).catch(next);
 }); // Atualização de um snippet existente
 
-router.delete('/:id', validateToken, (req, res, next) => {
+router.delete('/:id', authenticatedLimiter, validateToken, (req, res, next) => {
   deleteSnippet(req, res, next).catch(next);
 }); // Exclusão de um snippet
 
-router.get('/:id', validateToken, (req, res, next) => {
+router.get('/:id', authenticatedLimiter, validateToken, (req, res, next) => {
   getSnippet(req, res, next).catch(next);
 }); // Busca um snippet específico
 
-router.patch('/:id/favorite', validateToken, (req, res, next) => {
+router.patch('/:id/favorite', authenticatedLimiter, validateToken, (req, res, next) => {
   markFavorite(req, res, next).catch(next);
 }); // Marca ou desmarca como favorito
 

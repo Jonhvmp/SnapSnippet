@@ -91,7 +91,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     // Verifica se o usuário está bloqueado
     if (user.isLocked()) {
-      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.');
+      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.'); 
     }
 
     const isMatch = await user.comparePassword(password);
@@ -125,7 +125,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       return handleValidationError(res, 'O e-mail é obrigatório');
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: { $eq: email } });
     if (!user) {
       return handleValidationError(res, 'Usuário não encontrado');
     }

@@ -34,7 +34,7 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
-    "@types/axios": "^0.9.36",
+    "@types/axios": "^0.14.4",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/form-data": "^2.2.1",
