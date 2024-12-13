@@ -60,8 +60,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return handleValidationError(res, 'A senha é obrigatória e deve ter entre 8 e 128 caracteres e as senhas devem coincidir.');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
+    const user = new User({ username, email, password });
     await user.save();
 
     console.log(`Usuário registrado: ${user.id}`);
@@ -91,7 +90,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
     // Verifica se o usuário está bloqueado
     if (user.isLocked()) {
-      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.'); 
+      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.');
     }
 
     const isMatch = await user.comparePassword(password);
