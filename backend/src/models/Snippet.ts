@@ -86,7 +86,7 @@ SnippetSchema.pre<ISnippet>('save', function (next) {
 
   // Remover atributos perigosos
   let previousCode;
-  const dangerousAttrRegex = /on\w+=(["'])(?:(?=(\\?))\2.)*?\1/g;
+  const dangerousAttrRegex = /on\w+=(["'])(?:(?=(\\?))\2.)*?\1|javascript:|data:|vbscript:/gi;
   do {
     previousCode = this.code;
     this.code = this.code.replace(dangerousAttrRegex, '');
