@@ -1,7 +1,7 @@
 // src/services/GitHubApiService.ts
 
 import axios from 'axios';
-import env from '../config/env'
+import env from '../../config/env'
 export class GitHubApiService {
   private static languageMap: { [key: string]: string } = {
     js: 'JavaScript',
