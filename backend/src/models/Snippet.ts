@@ -65,7 +65,7 @@ const SnippetSchema = new Schema<ISnippet>(
     },
     sharedLink: {
       type: String,
-      default: null, // Indica que o snippet não é compartilhado inicialmente
+      // default: null, // Indica que o snippet não é compartilhado inicialmente
       unique: true,
       sparse: true,  // Permite valores nulos e únicos
     },

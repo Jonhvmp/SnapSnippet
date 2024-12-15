@@ -68,8 +68,6 @@ UserSchema.pre<IUser>('save', async function (next) {
   next();
 });
 
-console.log('Hash da senha (UserSchema):', UserSchema);
-
 // Método para comparar a senha informada com o hash armazenado
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
