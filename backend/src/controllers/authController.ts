@@ -15,37 +15,6 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 export const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return handleValidationError(res, 'Todos os campos são obrigatórios');
-    }
-
-    const user = await User.findOne({ email: { $eq: email } }).select('+password'); // Inclui a senha na consulta
-    if (!user) {
-      return handleValidationError(res, 'Credenciais inválidas');
-    }
-
-    // Verifica se o usuário está bloqueado
-    if (user.isLocked()) {
-      return handleValidationError(res, 'Conta bloqueada devido a várias tentativas de login. Tente novamente mais tarde.');
-    }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      await user.incrementLoginAttempts(); // Incrementa tentativas de login
-      return handleValidationError(res, 'Credenciais inválidas');
-    }
-
-    // Login bem-sucedido: redefinir tentativas de login
-    user.loginAttempts = 0;
-    user.lockUntil = null; // Remove bloqueios, caso tenha
-    await user.save();
-
-    console.log(`Usuário logado: ${user.id}`);
-
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
     const { accessToken, refreshToken } = await loginUserService(email, password);
     res.json({ accessToken, refreshToken });
   } catch (error: any) {
