@@ -6,7 +6,7 @@ export async function findUserByEmail(email: string): Promise<IUser | null> {
 }
 
 export async function findUserByUsername(username: string): Promise<IUser | null> {
-  return User.findOne({ username });
+  return User.findOne({ username: { $eq: username } });
 }
 
 export async function createUser(username: string, email: string, hashedPassword: string): Promise<IUser> {
