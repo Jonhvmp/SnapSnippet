@@ -1,10 +1,11 @@
 // src/models/User.ts
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
 
 // Interface para tipagem TypeScript
 export interface IUser extends Document {
+  _id: Types.ObjectId; // Adicione esta linha
   username: string;
   email: string;
   password: string;

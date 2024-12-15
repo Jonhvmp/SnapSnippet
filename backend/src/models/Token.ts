@@ -1,12 +1,13 @@
 // src/models/Token.ts
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 // Interface para tipagem TypeScript
 export interface IToken extends Document {
-  userId: Schema.Types.ObjectId; // Referência ao ID do usuário
-  token: string; // Hash do token
-  sessionId: string; // ID da sessão
-  expiresAt: Date; // Data de expiração do token
+  _id: Types.ObjectId; // Adicione esta linha
+  userId: Types.ObjectId; // Alterar para Types.ObjectId
+  token: string;
+  sessionId: string;
+  expiresAt: Date;
 }
 
 // Schema do Token
