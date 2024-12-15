@@ -2,7 +2,7 @@ import { Token, IToken } from '../models/Token';
 
 export async function createResetToken(userId: string, hashedToken: string, sessionId: string, expiresAt: number): Promise<IToken> {
   const token = new Token({ userId, token: hashedToken, sessionId, expiresAt });
-  return token.save();
+  return token.save(); // Salva no bd
 }
 
 export async function findValidResetToken(hashedToken: string): Promise<IToken | null> {
