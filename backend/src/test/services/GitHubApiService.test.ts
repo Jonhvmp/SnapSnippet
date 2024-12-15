@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GitHubApiService } from '../../services/GitHubApiService';
+import { GitHubApiService } from '../../services/github/GitHubApiService';
 import env from '../../config/env';
 
 // Mock do axios
