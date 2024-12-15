@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import { User, IUser } from '../models/User';
 
 export async function findUserByEmail(email: string): Promise<IUser | null> {
-  return User.findOne({ email }).select('+password');
+  return User.findOne({ email: { $eq: email } }).select('+password');
 }
 
 export async function findUserByUsername(username: string): Promise<IUser | null> {
