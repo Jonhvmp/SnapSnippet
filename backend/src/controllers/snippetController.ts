@@ -2,9 +2,9 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { Snippet } from '../models/Snippet';
-import { GitHubApiService } from '../services/GitHubApiService';
+import { GitHubApiService } from '../services/github/GitHubApiService';
 import { v4 as uuidv4 } from 'uuid';
-import { validationResult } from 'express-validator';
+// import { validationResult } from 'express-validator';
 import { handleValidationError } from '../utils/validationUtils';
 
 // Cria um novo snippet
