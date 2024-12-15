@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Snippet } from '../../models/Snippet';
 import * as snippetController from '../../controllers/snippetController';
-import { GitHubApiService } from '../../services/GitHubApiService';
+import { GitHubApiService } from '../../services/github/GitHubApiService';
 import { v4 as uuidv4 } from 'uuid';
 
 // Mock das dependências
@@ -104,7 +104,7 @@ describe('Snippet Controller', () => {
 
       expect(Snippet.findById).toHaveBeenCalledWith('snippet1');
       expect(mockSnippet.save).toHaveBeenCalled();
-      expect(mockSnippet.sharedLink).toBe('http://localhost:3000/shared/mocked-uuid');
+      expect(mockSnippet.sharedLink).toBe('http://localhost:3000/api/snippets/shared/mocked-uuid');
       expect(res.json).toHaveBeenCalledWith({ link: mockSnippet.sharedLink });
     });
 
