@@ -14,6 +14,7 @@ import {
   shareSnippet,
   // deleteSharedLink,
 } from '../controllers/snippetController';
+import { createCategory, getCategories, updateCategory, deleteCategory } from '../controllers/categoryController';
 import { authenticatedLimiter, limiter } from '../utils/rateLimiting';
 
 const router = Router();
@@ -46,6 +47,22 @@ router.get('/tags', authenticatedLimiter, validateToken, (req, res, next) => {
 router.get('/shared/:link', limiter, (req, res, next) => {
   fetchSharedSnippet(req, res, next).catch(next);
 }); // Busca snippets compartilhados com o usuário
+
+router.post('/categories', authenticatedLimiter, validateToken, (req, res, next) => {
+  createCategory(req, res, next).catch(next);
+}); // Criação de uma nova categoria
+
+router.get('/categories', authenticatedLimiter, validateToken, (req, res, next) => {
+  getCategories(req, res, next).catch(next);
+}); // Busca categorias do usuário
+
+router.put('/categories/:id', authenticatedLimiter, validateToken, (req, res, next) => {
+  updateCategory(req, res, next).catch(next);
+}); // Atualização de uma categoria existente
+
+router.delete('/categories/:id', authenticatedLimiter, validateToken, (req, res, next) => {
+  deleteCategory(req, res, next).catch(next);
+}); // Exclusão de uma categoria
 
 router.post('/:id/share', authenticatedLimiter, validateToken, (req, res, next) => {
   shareSnippet(req, res, next).catch(next);
