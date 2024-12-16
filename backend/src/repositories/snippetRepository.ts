@@ -14,7 +14,15 @@ export const findSnippetById = (id: string) => {
 };
 
 export const updateSnippetById = (id: string, updateData: any) => {
-  return Snippet.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
+  // Validate updateData to ensure it only contains allowed fields
+  const allowedFields = ['title', 'description', 'language', 'tags', 'code', 'favorite'];
+  const sanitizedData: any = {};
+  for (const key in updateData) {
+    if (allowedFields.includes(key)) {
+      sanitizedData[key] = updateData[key];
+    }
+  }
+  return Snippet.findByIdAndUpdate(id, { $set: sanitizedData }, { new: true, runValidators: true });
 };
 
 export const deleteSnippetById = (id: string) => {
