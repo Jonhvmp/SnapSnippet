@@ -9,7 +9,8 @@ export interface ISnippet extends Document {
   user: Schema.Types.ObjectId;
   code: string;
   favorite: boolean;
-  sharedLink: string | null; // Novo campo
+  category: Schema.Types.ObjectId | null;
+  sharedLink: string | null;
   createdAt: Date;
 }
 
@@ -62,6 +63,11 @@ const SnippetSchema = new Schema<ISnippet>(
     favorite: {
       type: Boolean,
       default: false,
+    },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      required: false,
     },
     sharedLink: {
       type: String,
