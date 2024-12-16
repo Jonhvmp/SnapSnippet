@@ -1,12 +1,24 @@
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
-import { Schema, model, Document, Types } from 'mongoose';
-import { IUser } from '../../models/User';
+import crypto from 'crypto'; // gerar tokens aleatórios
 import { IToken } from '../../models/Token';
-import { findUserByEmail, findUserByUsername, createUser, findUserById } from '../../repositories/userRepository';
-import { createResetToken, findValidResetToken, deleteResetToken } from '../../repositories/tokenRepository';
-import { validateEmail, validatePassword } from '../../utils/validationUtils';
-import { generateAccessToken, generateRefreshToken } from '../../utils/tokenUtils';
+import {
+  findUserByEmail,
+  findUserByUsername,
+  createUser,
+  findUserById
+} from '../../repositories/userRepository'; // Importa as funções de manipulação de usuários
+import {
+  createResetToken,
+  findValidResetToken,
+  deleteResetToken
+} from '../../repositories/tokenRepository'; // Importa as funções de manipulação de tokens
+import {
+  validateEmail,
+  validatePassword
+} from '../../utils/validationUtils';
+import {
+  generateAccessToken,
+  generateRefreshToken
+} from '../../utils/tokenUtils';
 import { sendEmail } from '../../config/sendEmail';
 
 export async function registerUserService(username: string, email: string, password: string, confirmPassword: string): Promise<{ message: string, accessToken: string, refreshToken: string }> {
@@ -64,9 +76,9 @@ export async function loginUserService(email: string, password: string): Promise
     throw new Error('Credenciais inválidas');
   }
 
-  user.loginAttempts = 0;
-  user.lockUntil = null;
-  await user.save();
+  user.loginAttempts = 0; // Reset login attempts
+  user.lockUntil = null; // Remove lock on account caso exista um lock
+  await user.save(); // salva no bd
 
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
@@ -84,12 +96,12 @@ export async function forgotPasswordService(email: string, baseUrl: string): Pro
     throw new Error('Usuário não encontrado');
   }
 
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  const sessionId = crypto.randomBytes(16).toString('hex');
-  const expiresAt = Date.now() + 20 * 60 * 1000;
+  const resetToken = crypto.randomBytes(32).toString('hex'); // Gera um token aleatório
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex'); // hash do token
+  const sessionId = crypto.randomBytes(16).toString('hex'); // Gera um id de sessão aleatório
+  const expiresAt = Date.now() + 20 * 60 * 1000; // 20 minutos
 
-  await createResetToken(user._id.toString(), hashedToken, sessionId, expiresAt);
+  await createResetToken(user._id.toString(), hashedToken, sessionId, expiresAt); // Salva o token no bd
 
   const resetLink = `${baseUrl}/reset-password/${resetToken}`;
 
@@ -147,8 +159,8 @@ export async function resetPasswordService(token: string, password: string, conf
     throw new Error('A senha é obrigatória e deve ter entre 8 e 128 caracteres e as senhas devem coincidir.');
   }
 
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-  const tokenDoc: IToken | null = await findValidResetToken(hashedToken);
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex'); // hash do token
+  const tokenDoc: IToken | null = await findValidResetToken(hashedToken); // Busca o token no bd
 
   if (!tokenDoc) {
     throw new Error('Token inválido ou expirado');
@@ -159,19 +171,19 @@ export async function resetPasswordService(token: string, password: string, conf
     throw new Error('Usuário não encontrado');
   }
 
-  user.password = password;
+  user.password = password; // Atualiza a senha do usuário
   user.loginAttempts = 0;
   user.lockUntil = null;
-  await user.save();
+  await user.save(); // Salva no bd
 
-  await deleteResetToken(tokenDoc._id.toString());
+  await deleteResetToken(tokenDoc._id.toString()); // Deleta o token do bd
 
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
   return {
     message: 'Senha redefinida com sucesso',
-    redirect: './',
+    redirect: './', // Redireciona para a página inicial
     accessToken,
     refreshToken
   };

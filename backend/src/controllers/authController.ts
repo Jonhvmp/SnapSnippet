@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { registerUserService, loginUserService, forgotPasswordService, resetPasswordService } from '../services/auth/authService';
+import {
+  registerUserService,
+  loginUserService,
+  forgotPasswordService,
+  resetPasswordService
+} from '../services/auth/authService';
 import { handleValidationError } from '../utils/validationUtils';
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -13,3 +13,15 @@ export function validateEmail(email: string): boolean {
 export function validatePassword(password: string, confirmPassword: string): boolean {
   return password.length >= 8 && password.length <= 128 && password === confirmPassword;
 }
+
+// export function validateSnippetData (data: any): boolean => {
+//   const { title, description, language, tags, code } = data;
+//   return (
+//     typeof title === 'string' &&
+//     typeof description === 'string' &&
+//     typeof language === 'string' &&
+//     Array.isArray(tags) &&
+//     typeof code === 'string' &&
+//     code.length > 0
+//   );
+// };
