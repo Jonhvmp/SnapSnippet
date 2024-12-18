@@ -1,4 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
+import sanitizeHtml from 'sanitize-html';
 
 // Interface para tipagem TypeScript
 export interface ISnippet extends Document {
@@ -87,32 +88,20 @@ const SnippetSchema = new Schema<ISnippet>(
 
 // Middleware para sanitizar o campo "code" e evitar ataques
 SnippetSchema.pre<ISnippet>('save', function (next) {
-  // Codificar tags HTML perigosas
-  this.code = this.code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-  // Remover atributos perigosos
-  let previousCode;
-  const dangerousAttrRegex = /on\w+=(["'])(?:(?=(\\?))\2.)*?\1|javascript:|data:|vbscript:/gi;
-  do {
-    previousCode = this.code;
-    this.code = this.code.replace(dangerousAttrRegex, '');
-  } while (this.code !== previousCode);
-
-  // Remover URLs perigosas em estilos inline
-  this.code = this.code.replace(/style\s*=\s*["'][^"']*(javascript|data|vbscript):[^"']*["']/gi, 'style=""');
-
-  // Remover o uso de expression em estilos
-  this.code = this.code.replace(/expression\([^)]*\)/gi, '');
-
-  // Remover tags específicas não desejadas
-  const forbiddenTags = ['script', 'iframe', 'img', 'embed', 'object', 'link', 'style'];
-  forbiddenTags.forEach((tag) => {
-    const tagRegex = new RegExp(`<${tag}[^>]*>`, 'gi');
-    const closeTagRegex = new RegExp(`</${tag}>`, 'gi');
-    this.code = this.code.replace(tagRegex, `&lt;${tag}&gt;`);
-    this.code = this.code.replace(closeTagRegex, `&lt;/${tag}&gt;`);
+  // Sanitize the code field using sanitize-html
+  this.code = sanitizeHtml(this.code, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ]),
+    allowedAttributes: {
+      '*': [ 'style', 'class' ],
+      'a': [ 'href', 'name', 'target' ],
+      'img': [ 'src' ]
+    },
+    allowedSchemes: [ 'http', 'https', 'ftp', 'mailto', 'tel' ],
+    allowedSchemesByTag: {},
+    allowedSchemesAppliedToAttributes: [ 'href', 'src', 'cite' ],
+    allowProtocolRelative: true,
+    enforceHtmlBoundary: true
   });
-
   next();
 });
 
