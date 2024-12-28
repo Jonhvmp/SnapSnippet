@@ -1,0 +1,15 @@
+@import url(../../app/root.css);
+
+.card-form {
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+  transition: box-shadow 0.3s ease;
+}
+
+.card-form:hover {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}

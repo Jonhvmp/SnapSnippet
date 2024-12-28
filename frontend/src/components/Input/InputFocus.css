@@ -1,0 +1,24 @@
+@import url(../../app/root.css);
+
+label {
+  color: var(--color-input-label) !important;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+  color: var(--color-secondary);
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+input:focus {
+  border: 1px solid var(--color-primary);
+}
+
+input::placeholder {
+  color: var(--color-tertiary);
+}
