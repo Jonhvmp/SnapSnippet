@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import env from '../config/env';
 
 export const validateToken = (req: Request, res: Response, next: NextFunction): void => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const token = req.cookies.accessToken;
   if (!token) {
     res.status(401).json({ message: 'Token de autenticação ausente.' });
     return;

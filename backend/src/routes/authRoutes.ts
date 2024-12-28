@@ -1,5 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { registerUser, loginUser, forgotPassword, resetPassword } from '../controllers/authController';
+import {
+  registerUser,
+  loginUser,
+  forgotPassword,
+  resetPassword
+} from '../controllers/authController';
 import { body } from 'express-validator';
 import { ValidationChain, Result, validationResult } from 'express-validator';
 import { validateResetToken } from '../middlewares/validateResetToken';
@@ -38,8 +43,7 @@ const validate: ValidationMethod = (method) => {
             throw new Error('As senhas não coincidem.');
           }
           return true;
-        }
-        ),
+        }),
       ];
     default:
       throw new Error('Método de validação não encontrado.');
@@ -53,17 +57,13 @@ const validateRequest = (req: Request, res: Response, next: NextFunction): void 
       message: 'Falha na validação.',
       errors: errors.array(),
     });
-    return; // Interrompe o fluxo após enviar a resposta
+    return;
   }
-  next(); // Passa para o próximo middleware/rota se não houver erros
+  next();
 };
 
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
-  console.log(`Executando função assíncrona para a rota: ${req.path}`);
-  Promise.resolve(fn(req, res, next)).catch((error) => {
-    console.error('Erro ao executar função assíncrona para a rota: %s', req.path, error);
-    next(error);
-  });
+  Promise.resolve(fn(req, res, next)).catch(next);
 };
 
 const router = Router();
@@ -78,7 +78,7 @@ router.post('/forgot-password', limiter, validate('forgot-password'), validateRe
 
 router.post('/reset-password/:token', limiter, validateResetToken, validate('reset-password'), validateRequest, asyncHandler(resetPassword));
 
-
+// Middleware de tratamento de erros
 router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map((error: any) => error.message);
@@ -89,6 +89,5 @@ router.use((err: any, req: Request, res: Response, next: NextFunction): void => 
   console.error('Erro no tratamento da rota: %s', req.path, err);
   res.status(500).json({ message: 'Ocorreu um erro interno no servidor.' });
 });
-
 
 export default router;

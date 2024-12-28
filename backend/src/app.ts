@@ -7,6 +7,7 @@ import { connectDB } from './config/database'
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -18,6 +19,12 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
+
+app.use(cookieParser());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://192.168.56.1:3000'],
+  credentials: true, // Permitir envio de cookies
+}));
 
 // passando tipagem na rota ('/)
 app.get('/', (req: Request, res: Response): void => {

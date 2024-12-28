@@ -1,4 +1,4 @@
-import crypto from 'crypto'; // gerar tokens aleatórios
+import crypto from 'crypto'; // Gerar tokens aleatórios
 import { IToken } from '../../models/Token';
 import {
   findUserByEmail,
@@ -20,8 +20,9 @@ import {
   generateRefreshToken
 } from '../../utils/tokenUtils';
 import { sendEmail } from '../../config/sendEmail';
+import { Response } from 'express';
 
-export async function registerUserService(username: string, email: string, password: string, confirmPassword: string): Promise<{ message: string, accessToken: string, refreshToken: string }> {
+export async function registerUserService(username: string, email: string, password: string, confirmPassword: string): Promise<{ message: string }> {
   if (!username || !email || !password || !confirmPassword) {
     throw new Error('Todos os campos são obrigatórios');
   }
@@ -49,14 +50,13 @@ export async function registerUserService(username: string, email: string, passw
   }
 
   const user = await createUser(username, email, password);
-
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
-  return { message: 'Usuário registrado com sucesso', accessToken, refreshToken };
+  return { message: 'Usuário registrado com sucesso' };
 }
 
-export async function loginUserService(email: string, password: string): Promise<{ accessToken: string, refreshToken: string }> {
+export async function loginUserService(email: string, password: string, res: Response): Promise<{ message: string }> {
   if (!email || !password) {
     throw new Error('Todos os campos são obrigatórios');
   }
@@ -78,12 +78,27 @@ export async function loginUserService(email: string, password: string): Promise
 
   user.loginAttempts = 0; // Reset login attempts
   user.lockUntil = null; // Remove lock on account caso exista um lock
-  await user.save(); // salva no bd
+  await user.save(); // Salva no BD
 
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
-  return { accessToken, refreshToken };
+  // Configurar cookies no objeto Response
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000, // 15 minutos
+  });
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+  });
+
+  return { message: 'Login realizado com sucesso' };
 }
 
 export async function forgotPasswordService(email: string, baseUrl: string): Promise<{ message: string, resetLink: string }> {
@@ -97,11 +112,11 @@ export async function forgotPasswordService(email: string, baseUrl: string): Pro
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex'); // Gera um token aleatório
-  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex'); // hash do token
-  const sessionId = crypto.randomBytes(16).toString('hex'); // Gera um id de sessão aleatório
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex'); // Hash do token
+  const sessionId = crypto.randomBytes(16).toString('hex'); // Gera um ID de sessão aleatório
   const expiresAt = Date.now() + 20 * 60 * 1000; // 20 minutos
 
-  await createResetToken(user._id.toString(), hashedToken, sessionId, expiresAt); // Salva o token no bd
+  await createResetToken(user._id.toString(), hashedToken, sessionId, expiresAt); // Salva o token no BD
 
   const resetLink = `${baseUrl}/reset-password/${resetToken}`;
 
@@ -150,7 +165,7 @@ export async function forgotPasswordService(email: string, baseUrl: string): Pro
   return { message: 'E-mail de redefinição de senha enviado com sucesso', resetLink };
 }
 
-export async function resetPasswordService(token: string, password: string, confirmPassword: string): Promise<{ message: string, redirect: string, accessToken: string, refreshToken: string }> {
+export async function resetPasswordService(token: string, password: string, confirmPassword: string): Promise<{ message: string, redirect: string }> {
   if (!password || !confirmPassword) {
     throw new Error('Todos os campos são obrigatórios');
   }
@@ -159,8 +174,8 @@ export async function resetPasswordService(token: string, password: string, conf
     throw new Error('A senha é obrigatória e deve ter entre 8 e 128 caracteres e as senhas devem coincidir.');
   }
 
-  const hashedToken = crypto.createHash('sha256').update(token).digest('hex'); // hash do token
-  const tokenDoc: IToken | null = await findValidResetToken(hashedToken); // Busca o token no bd
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex'); // Hash do token
+  const tokenDoc: IToken | null = await findValidResetToken(hashedToken); // Busca o token no BD
 
   if (!tokenDoc) {
     throw new Error('Token inválido ou expirado');
@@ -174,17 +189,12 @@ export async function resetPasswordService(token: string, password: string, conf
   user.password = password; // Atualiza a senha do usuário
   user.loginAttempts = 0;
   user.lockUntil = null;
-  await user.save(); // Salva no bd
+  await user.save(); // Salva no BD
 
-  await deleteResetToken(tokenDoc._id.toString()); // Deleta o token do bd
-
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
+  await deleteResetToken(tokenDoc._id.toString()); // Deleta o token do BD
 
   return {
     message: 'Senha redefinida com sucesso',
-    redirect: './', // Redireciona para a página inicial
-    accessToken,
-    refreshToken
+    redirect: '/'
   };
 }
