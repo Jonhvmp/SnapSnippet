@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -6,43 +6,42 @@ import { InputFocusBlur } from "@/components/Input/InputFocus";
 import Card from "@/components/Layout/Card";
 import BaseForm from "@/components/Form/BaseForm";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
-import "./login.css";
 
-export default function LoginForm() {
+export default function RegisterForm() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email, "Password:", password, "Remember Me:", rememberMe);
+    console.log("username:", username, "Email:", email, "Password:", password);
+
+    if (username.length < 3 || password.length > 50) {
+      setUsernameError("O nome de usuário é obrigatório e deve ter entre 3 e 50 caracteres.");
+    }
 
     if (!email.includes("@") || !email.includes(".")) {
-      setEmailError("Email inválido");
+      setEmailError("O e-mail é obrigatório e deve ser válido.");
       return;
     } else {
       setEmailError("");
     }
 
     if (password.length < 6) {
-      setPasswordError("Senha deve ter no mínimo 6 caracteres");
+      setPasswordError("A senha é obrigatória e deve ter entre 8 e 128 caracteres.");
       return;
     } else {
       setPasswordError("");
     }
-
-    // Simulação de login (com "Lembrar de mim")
-    if (rememberMe) {
-      localStorage.setItem("rememberedEmail", email);
-    } else {
-      localStorage.removeItem("rememberedEmail");
-    }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black">
+    <div
+      style={{padding: "20px 0px"}}
+      className="flex min-h-screen items-center justify-center bg-black">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -51,12 +50,22 @@ export default function LoginForm() {
       >
         <Card>
           <h1 className="title-form text-2xl font-semibold text-center mb-4">
-            Entrar
+            Cadastrar Conta
           </h1>
           <p className="text-form text-center text-neutral-400 mb-6">
-            Entre com suas credenciais para acessar sua conta.
+            Crie uma conta para acessar todos os recursos do sistema!
           </p>
           <BaseForm onSubmit={handleSubmit}>
+
+            <p>Nome de usuário</p>
+            <InputFocusBlur
+              placeholder="Digite seu nome de usuário"
+              type="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              feedbackError={usernameError}
+            />
+
             <p>Email:</p>
             <InputFocusBlur
               placeholder="Digite seu email"
@@ -75,41 +84,21 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               feedbackError={passwordError}
             />
-
-            {/* "Lembrar de mim" e "Esqueceu a senha?" */}
-            <div className="flex items-center justify-between mt-4">
-              <label className="flex items-center text-neutral-400 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="form-checkbox text-blue-500 border-neutral-700 rounded"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <span className="ml-2">Lembrar de mim</span>
-              </label>
-              <a
-                href="/forgot-password"
-                className="text-sm text-blue-500 hover:underline"
-              >
-                Esqueceu a senha?
-              </a>
-            </div>
-
             <PrimaryButton type="submit" label="Entrar" />
           </BaseForm>
 
           <p className="mt-4 text-center text-sm text-neutral-400">
-            Você ainda não possui uma conta?{" "}
+            Você já possui uma conta?{" "}
             <a
-              href="/register"
+              href="/login"
               className="font-semibold text-blue-500 hover:underline"
             >
-              Cadastre-se
+              Entrar
             </a>{" "}
-            grátis.
+            agora.
           </p>
         </Card>
       </motion.div>
     </div>
-  );
+  )
 }

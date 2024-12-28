@@ -1,0 +1,14 @@
+@import url(../root.css);
+
+.title-form {
+  color: var(--color-primary);
+  font-size: 2rem;
+}
+
+.text-form {
+  color: var(--color-secondary);
+}
+
+#error-message {
+  color: var(--error);
+}

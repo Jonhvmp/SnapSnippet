@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  /* Background e texto */
+  --background: #000000;
+  /* Fundo padrão */
+  --foreground: rgb(148, 140, 140);
+  /* Texto padrão */
+
+  /* Gradientes */
+  --radial-gradient-background: 250, 250, 250;
+  --solid-color-background: 15, 15, 15;
+  --overlay-color: 255, 255, 255;
+
+  /* Cores primárias, secundárias e terciárias */
+  --color-primary: #000000;
+  --color-secondary: #18181B;
+  --color-tertiary: #F2F2F2;
+
+  /* Cores do input */
+  --color-input-label: var(--color-secondary);
+  --color-input-placeholder: rgba(255, 255, 255, 0.5);
+  --color-input-border: rgba(255, 255, 255, 0.3);
+  --color-input-focus: rgba(0, 122, 255, 0.5);
+
+  /* Card */
+  --bg-card: #000000;
+  --bg-card-hover: #181818;
+  --card-border-radius: 12px;
+
+  /* Feedback */
+  --error: #ff0033;
+  /* Erro */
+  --success: #00ff00;
+  /* Sucesso */
+  --warning: #ffcc00;
+  /* Aviso */
+  --info: #00ccff;
+  /* Informação */
+
+  /* Botões */
+  --button-primary-bg: #2563eb;
+  /* Azul */
+  --button-primary-hover: #1e3a8a;
+  /* Azul escuro */
+  --button-secondary-bg: #6b7280;
+  /* Cinza */
+  --button-secondary-hover: #4b5563;
+  /* Cinza escuro */
+  --button-text: #ffffff;
+
+  /* Bordas */
+  --border-color: rgba(255, 255, 255, 0.2);
+  --border-focus-color: rgba(0, 122, 255, 0.8);
+  --border-radius: 8px;
+
+  /* Gradientes interativos */
+  --gradient-hover-start: rgba(255, 255, 255, 0.1);
+  --gradient-hover-end: rgba(255, 255, 255, 0.4);
+
+  /* Links */
+  --link-color: #2563eb;
+  /* Azul */
+  --link-hover-color: #1e3a8a;
+  /* Azul escuro */
+
+  /* Tipografia */
+  --font-general: 'Inter', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+  /* Fonte padrão */
+  --font-size-base: 16px;
+  --font-size-sm: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+
+  /* Espaçamento */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Sombra */
+  --shadow-light: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  --shadow-dark: 0px 6px 12px rgba(0, 0, 0, 0.3);
+
+  /* Estados do botão */
+  --button-disabled-bg: rgba(255, 255, 255, 0.2);
+  --button-disabled-text: rgba(255, 255, 255, 0.5);
+
+  /* Animações */
+  --transition-duration: 300ms;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
