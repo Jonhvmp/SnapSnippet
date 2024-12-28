@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { InputFocusBlur } from "@/components/Input/InputFocus";
 import Card from "@/components/Layout/Card";
 import BaseForm from "@/components/Form/BaseForm";
+import { api } from "../../service/apiService";
 import PrimaryButton from "@/components/Buttons/PrimaryButton";
 import "./login.css";
 
@@ -14,30 +15,63 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Carregar o email do localStorage ao montar o componente
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email, "Password:", password, "Remember Me:", rememberMe);
 
     if (!email.includes("@") || !email.includes(".")) {
       setEmailError("Email inválido");
+      setSuccessMessage("");
       return;
     } else {
       setEmailError("");
+      setSuccessMessage("");
     }
 
     if (password.length < 6) {
       setPasswordError("Senha deve ter no mínimo 6 caracteres");
+      setSuccessMessage("");
       return;
     } else {
       setPasswordError("");
+      setSuccessMessage("");
     }
 
-    // Simulação de login (com "Lembrar de mim")
-    if (rememberMe) {
-      localStorage.setItem("rememberedEmail", email);
-    } else {
-      localStorage.removeItem("rememberedEmail");
+    try {
+      const response = await api("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      console.log("Login bem-sucedido:", response);
+      setSuccessMessage("Login realizado com sucesso!");
+
+      // Salvar ou remover o email do localStorage
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
+
+      // Redirecionar para a página principal, por exemplo:
+      window.location.href = "/dashboard";
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Erro ao fazer login:", error.message);
+      } else {
+        console.error("Erro ao fazer login:", error);
+      }
+      setEmailError("Email ou senha incorretos");
     }
   };
 
@@ -74,6 +108,7 @@ export default function LoginForm() {
               autoComplete="current-password"
               onChange={(e) => setPassword(e.target.value)}
               feedbackError={passwordError}
+              feedbackSuccess={successMessage}
             />
 
             {/* "Lembrar de mim" e "Esqueceu a senha?" */}
